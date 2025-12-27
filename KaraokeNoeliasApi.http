@@ -1,0 +1,6 @@
+@KaraokeNoeliasApi_HostAddress = http://localhost:5101
+
+GET {{KaraokeNoeliasApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
