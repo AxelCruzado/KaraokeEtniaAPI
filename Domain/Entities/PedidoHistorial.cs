@@ -1,4 +1,4 @@
-﻿namespace KaraokeNoeliasApi.Domain.Entities;
+﻿namespace KaraokeEtniaApi.Domain.Entities;
 
 public class PedidoHistorial
 {

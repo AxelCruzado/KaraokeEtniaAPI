@@ -1,7 +1,7 @@
-﻿using KaraokeNoeliasApi.Domain.Entities;
+﻿using KaraokeEtniaApi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace KaraokeNoeliasApi.Infrastructure.Data;
+namespace KaraokeEtniaApi.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {
@@ -32,6 +32,7 @@ public class AppDbContext : DbContext
             entity.Property(m => m.TicketsDisponibles).HasColumnType("INT").HasDefaultValue(0);
             entity.Property(m => m.Estado)
                   .IsRequired()
+                  .HasMaxLength(50)
                   .HasDefaultValue(EstadoMesa.Disponible)
                   .HasConversion<string>();
 
@@ -55,7 +56,7 @@ public class AppDbContext : DbContext
             entity.HasKey(p => p.Id);
             entity.Property(p => p.MesaId).IsRequired().HasColumnType("INT");
             entity.Property(p => p.Total).HasColumnType("DECIMAL(10,2)").IsRequired();
-            entity.Property(p => p.RegistradoEn).HasDefaultValueSql("GETDATE()");
+            entity.Property(p => p.RegistradoEn);
             entity.Property(p => p.MetodoPago).HasMaxLength(50);
             entity.Property(p => p.PagoCliente).HasColumnType("DECIMAL(10,2)").HasDefaultValue(0.00);
 
@@ -79,7 +80,7 @@ public class AppDbContext : DbContext
             entity.HasKey(ph => ph.Id);
             entity.Property(ph => ph.MesaId).IsRequired().HasColumnType("INT");
             entity.Property(ph => ph.Total).HasColumnType("DECIMAL(18,2)").IsRequired().HasPrecision(18, 2);
-            entity.Property(ph => ph.RegistradoEn).HasDefaultValueSql("GETDATE()");
+            entity.Property(ph => ph.RegistradoEn);
             entity.Property(ph => ph.CerradoEn).IsRequired();
             entity.Property(ph => ph.MetodoPago).HasMaxLength(50);
             entity.Property(ph => ph.PagoCliente).HasColumnType("DECIMAL(10,2)").IsRequired();
@@ -171,6 +172,7 @@ public class AppDbContext : DbContext
             entity.Property(c => c.ImagenUrl).HasMaxLength(255); // Cambiado a ImagenUrl
             entity.Property(c => c.Estado)
                   .IsRequired()
+                  .HasMaxLength(50)
                   .HasDefaultValue(EstadoCategoria.Activo)
                   .HasConversion<string>();
         });
@@ -183,9 +185,9 @@ public class AppDbContext : DbContext
             entity.Property(s => s.MesaId).IsRequired().HasColumnType("INT");
             entity.Property(s => s.Titulo).IsRequired().HasMaxLength(100);
             entity.Property(s => s.Artista).IsRequired().HasMaxLength(100);
-            entity.Property(s => s.RegistradoEn).HasDefaultValueSql("GETDATE()");
-            entity.Property(s => s.Tipo).IsRequired().HasConversion<string>();
-            entity.Property(s => s.Estado).IsRequired().HasDefaultValue(EstadoSolicitud.Pendiente).HasConversion<string>();
+            entity.Property(s => s.RegistradoEn);
+            entity.Property(s => s.Tipo).IsRequired().HasMaxLength(50).HasConversion<string>();
+            entity.Property(s => s.Estado).IsRequired().HasMaxLength(50).HasDefaultValue(EstadoSolicitud.Pendiente).HasConversion<string>();
 
             entity.HasOne(s => s.Mesa)
                   .WithMany(m => m.SolicitudesCanciones)
@@ -202,7 +204,7 @@ public class AppDbContext : DbContext
             entity.Property(u => u.NombreUsuario).IsRequired().HasMaxLength(50).IsUnicode(false);
             entity.Property(u => u.ContraseñaHash).IsRequired().HasMaxLength(255);
             entity.Property(u => u.Rol).IsRequired().HasMaxLength(20).HasConversion<string>();
-            entity.Property(u => u.FechaRegistro).HasDefaultValueSql("GETDATE()");
+            entity.Property(u => u.FechaRegistro);
         });
     }
 }

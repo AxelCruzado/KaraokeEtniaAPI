@@ -1,10 +1,11 @@
 ﻿// Domain/Entities/Mesa.cs
-namespace KaraokeNoeliasApi.Domain.Entities;
+namespace KaraokeEtniaApi.Domain.Entities;
 
 public enum EstadoMesa
 {
     Disponible,
-    Ocupado
+    Ocupado,
+    Inactivo
 }
 
 public class Mesa

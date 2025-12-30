@@ -1,4 +1,4 @@
-﻿namespace KaraokeNoeliasApi.Application.DTOs
+﻿namespace KaraokeEtniaApi.Application.DTOs
 {
     public class PedidoDetalleDto
     {
@@ -9,3 +9,4 @@
         public ProductoDto Producto { get; set; }
     }
 }
+

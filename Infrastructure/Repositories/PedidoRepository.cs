@@ -1,6 +1,7 @@
-﻿namespace KaraokeNoeliasApi.Infrastructure.Repositories
+﻿namespace KaraokeEtniaApi.Infrastructure.Repositories
 {
     public class PedidoRepository
     {
     }
 }
+

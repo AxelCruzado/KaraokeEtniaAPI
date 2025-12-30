@@ -1,14 +1,14 @@
 ﻿// API/Controllers/MesasController.cs
-using KaraokeNoeliasApi.Infrastructure.Data;
+using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KaraokeNoeliasApi.Domain.Entities;
+using KaraokeEtniaApi.Domain.Entities;
 using Microsoft.AspNetCore.SignalR;
-using KaraokeNoeliasApi.API.Hubs;
-using KaraokeNoeliasApi.Domain.Interfaces;
-using KaraokeNoeliasApi.Application.DTOs;
+using KaraokeEtniaApi.API.Hubs;
+using KaraokeEtniaApi.Domain.Interfaces;
+using KaraokeEtniaApi.Application.DTOs;
 
-namespace KaraokeNoeliasApi.API.Controllers;
+namespace KaraokeEtniaApi.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -25,9 +25,16 @@ public class MesasController : ControllerBase
         _hubContext = hubContext;
     }
     [HttpGet]
-    public async Task<IActionResult> GetMesas()
+    public async Task<IActionResult> GetMesas([FromQuery] bool incluirInactivas = false)
     {
-        var mesas = await _context.Mesas
+        var query = _context.Mesas.AsQueryable();
+        
+        if (!incluirInactivas)
+        {
+            query = query.Where(m => m.Estado != EstadoMesa.Inactivo);
+        }
+
+        var mesas = await query
             .Include(m => m.PedidosActivos)
             .ThenInclude(pa => pa.Detalles)
             .ThenInclude(d => d.Producto)
@@ -193,6 +200,35 @@ public class MesasController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(new { Message = $"Error al agregar tickets: {ex.Message}" });
+        }
+    }
+
+    // POST: api/mesas/{id}/devolver-saldo
+    [HttpPost("{id}/devolver-saldo")]
+    public async Task<IActionResult> DevolverSaldo(int id)
+    {
+        try
+        {
+            var mesa = await _context.Mesas.FindAsync(id);
+            if (mesa == null)
+                return NotFound(new { Message = "Mesa no encontrada." });
+
+            if (mesa.Saldo <= 0)
+                return BadRequest(new { Message = "La mesa no tiene saldo acumulado para devolver." });
+
+            var saldoDevuelto = mesa.Saldo;
+            mesa.Saldo = 0;
+            await _context.SaveChangesAsync();
+
+            // Notificar a Meseras sobre la actualización
+            await _hubContext.Clients.Group("Meseras").SendAsync("MesaActualizada", id, mesa.Estado.ToString());
+            await _hubContext.Clients.All.SendAsync("MesaActualizada", id, "Saldo devuelto");
+
+            return Ok(new { Message = $"Se devolvió S/. {saldoDevuelto:F2} al cliente. Saldo actual: S/. 0.00", SaldoDevuelto = saldoDevuelto });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = $"Error al devolver saldo: {ex.Message}" });
         }
     }
 
@@ -384,4 +420,127 @@ public class MesasController : ControllerBase
             return BadRequest(new { Message = $"Error al liberar la mesa: {errorMessage}" });
         }
     }
+
+    [HttpPost]
+    public async Task<IActionResult> CrearMesa([FromBody] MesaDto mesaDto)
+    {
+        try
+        {
+            if (await _context.Mesas.AnyAsync(m => m.Numero == mesaDto.Numero && m.Estado != EstadoMesa.Inactivo))
+            {
+                return BadRequest(new { Message = $"Ya existe una mesa con el número {mesaDto.Numero}." });
+            }
+
+            var mesa = new Mesa
+            {
+                Numero = mesaDto.Numero,
+                Estado = EstadoMesa.Disponible,
+                Saldo = 0,
+                TicketsDisponibles = 0
+            };
+
+            _context.Mesas.Add(mesa);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Mesa creada exitosamente.", MesaId = mesa.Id });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = $"Error al crear la mesa: {ex.Message}" });
+        }
+    }
+
+    [HttpPut("{id}/estado")]
+    public async Task<IActionResult> ActualizarEstado(int id, [FromBody] string nuevoEstado)
+    {
+        try
+        {
+            if (!Enum.TryParse<EstadoMesa>(nuevoEstado, true, out var estado))
+            {
+                return BadRequest(new { Message = "Estado inválido." });
+            }
+
+            var mesa = await _context.Mesas.FindAsync(id);
+            if (mesa == null) return NotFound();
+
+            mesa.Estado = estado;
+            await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("MesaActualizada", id, estado.ToString());
+
+            return Ok(new { Message = "Estado de la mesa actualizado." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = $"Error al actualizar estado: {ex.Message}" });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> EliminarMesa(int id)
+    {
+        try
+        {
+            var mesa = await _context.Mesas.FindAsync(id);
+            if (mesa == null) return NotFound();
+
+            // Verificación de integridad: si tiene pedidos activos, no se puede inactivar
+            if (await _context.PedidosActivos.AnyAsync(p => p.MesaId == id))
+            {
+                return BadRequest(new { Message = "La mesa tiene pedidos activos y no se puede desactivar." });
+            }
+
+            // En lugar de borrar, marcamos como Inactivo
+            mesa.Estado = EstadoMesa.Inactivo;
+            await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("MesaActualizada", id, "Inactivo");
+
+            return Ok(new { Message = "Mesa desactivada exitosamente para preservar el historial." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = $"Error al desactivar mesa: {ex.Message}" });
+        }
+    }
+
+    [HttpPost("bulk")]
+    public async Task<IActionResult> CrearMesasMasivas([FromBody] BulkMesaDto bulkDto)
+    {
+        try
+        {
+            var nuevasMesas = new List<Mesa>();
+            for (int i = bulkDto.Desde; i <= bulkDto.Hasta; i++)
+            {
+                if (!await _context.Mesas.AnyAsync(m => m.Numero == i && m.Estado != EstadoMesa.Inactivo))
+                {
+                    nuevasMesas.Add(new Mesa
+                    {
+                        Numero = i,
+                        Estado = EstadoMesa.Disponible,
+                        Saldo = 0,
+                        TicketsDisponibles = 0
+                    });
+                }
+            }
+
+            if (nuevasMesas.Any())
+            {
+                _context.Mesas.AddRange(nuevasMesas);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { Message = $"{nuevasMesas.Count} mesas creadas exitosamente." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = $"Error en creación masiva: {ex.Message}" });
+        }
+    }
+}
+
+public class BulkMesaDto
+{
+    public int Desde { get; set; }
+    public int Hasta { get; set; }
 }

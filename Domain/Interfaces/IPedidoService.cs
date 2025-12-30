@@ -1,6 +1,6 @@
-﻿using KaraokeNoeliasApi.Domain.Entities;
+﻿using KaraokeEtniaApi.Domain.Entities;
 
-namespace KaraokeNoeliasApi.Domain.Interfaces
+namespace KaraokeEtniaApi.Domain.Interfaces
 {
     public interface IPedidoService
     {
@@ -8,3 +8,4 @@ namespace KaraokeNoeliasApi.Domain.Interfaces
         Task<List<PedidoActivo>> ObtenerPedidosPorMesaAsync(int mesaId);
     }
 }
+

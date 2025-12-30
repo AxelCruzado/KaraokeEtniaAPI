@@ -1,12 +1,12 @@
 ﻿// Services/PedidoService.cs
-using KaraokeNoeliasApi.Domain.Entities;
-using KaraokeNoeliasApi.Infrastructure.Data;
+using KaraokeEtniaApi.Domain.Entities;
+using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
-using KaraokeNoeliasApi.API.Hubs;
-using KaraokeNoeliasApi.Domain.Interfaces;
+using KaraokeEtniaApi.API.Hubs;
+using KaraokeEtniaApi.Domain.Interfaces;
 
-namespace KaraokeNoeliasApi.Infrastructure.Services;
+namespace KaraokeEtniaApi.Infrastructure.Services;
 
 public class PedidoService : IPedidoService
 {

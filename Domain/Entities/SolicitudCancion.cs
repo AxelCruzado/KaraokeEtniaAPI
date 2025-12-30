@@ -1,5 +1,5 @@
 ﻿// Domain/Entities/SolicitudCancion.cs
-namespace KaraokeNoeliasApi.Domain.Entities;
+namespace KaraokeEtniaApi.Domain.Entities;
 
 public class SolicitudCancion
 {

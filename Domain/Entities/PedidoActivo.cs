@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace KaraokeNoeliasApi.Domain.Entities;
+namespace KaraokeEtniaApi.Domain.Entities;
 
 public class PedidoActivo
 {

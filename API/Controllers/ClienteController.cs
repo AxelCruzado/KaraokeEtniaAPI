@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KaraokeNoeliasApi.Domain.Entities;
-using KaraokeNoeliasApi.Infrastructure.Data;
-using KaraokeNoeliasApi.Application.DTOs;
+using KaraokeEtniaApi.Domain.Entities;
+using KaraokeEtniaApi.Infrastructure.Data;
+using KaraokeEtniaApi.Application.DTOs;
 using Microsoft.AspNetCore.SignalR;
-using KaraokeNoeliasApi.API.Hubs;
+using KaraokeEtniaApi.API.Hubs;
 
-namespace KaraokeNoeliasApi.API.Controllers
+namespace KaraokeEtniaApi.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

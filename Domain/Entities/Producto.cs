@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace KaraokeNoeliasApi.Domain.Entities
+namespace KaraokeEtniaApi.Domain.Entities
 {
     [Table("Productos")]
     public class Producto

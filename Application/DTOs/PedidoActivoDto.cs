@@ -1,4 +1,4 @@
-﻿namespace KaraokeNoeliasApi.Application.DTOs
+﻿namespace KaraokeEtniaApi.Application.DTOs
 {
     public class PedidoActivoDto
     {
@@ -11,3 +11,4 @@
         public decimal PagoCliente { get; set; }
     }
 }
+

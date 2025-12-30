@@ -1,12 +1,12 @@
-﻿using KaraokeNoeliasApi.Infrastructure.Data;
+﻿using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KaraokeNoeliasApi.Domain.Entities;
-using KaraokeNoeliasApi.Application.DTOs;
+using KaraokeEtniaApi.Domain.Entities;
+using KaraokeEtniaApi.Application.DTOs;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 
-namespace KaraokeNoeliasApi.API.Controllers;
+namespace KaraokeEtniaApi.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -249,7 +249,8 @@ public class ProductosController : ControllerBase
                 await image.CopyToAsync(stream);
             }
 
-            return $"https://localhost:7226/images/productos/{fileName}"; 
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            return $"{baseUrl}/images/productos/{fileName}"; 
         }
         catch (Exception ex)
         {

@@ -1,6 +1,7 @@
-﻿namespace KaraokeNoeliasApi.Application.Services
+﻿namespace KaraokeEtniaApi.Application.Services
 {
     public class CancionService
     {
     }
 }
+

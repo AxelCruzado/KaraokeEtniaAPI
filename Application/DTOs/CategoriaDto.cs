@@ -1,4 +1,4 @@
-﻿namespace KaraokeNoeliasApi.Application.DTOs
+﻿namespace KaraokeEtniaApi.Application.DTOs
 {
     public class CategoriaDto
     {

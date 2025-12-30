@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace KaraokeNoeliasApi.Domain.Entities
+namespace KaraokeEtniaApi.Domain.Entities
 {
     public class Gasto
     {
@@ -13,3 +13,4 @@ namespace KaraokeNoeliasApi.Domain.Entities
         public string Tipo { get; set; } // "Diario", "Semanal", "Mensual"
     }
 }
+

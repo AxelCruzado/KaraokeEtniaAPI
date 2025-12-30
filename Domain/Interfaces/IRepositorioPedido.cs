@@ -1,6 +1,7 @@
-﻿namespace KaraokeNoeliasApi.Domain.Interfaces
+﻿namespace KaraokeEtniaApi.Domain.Interfaces
 {
     public interface IRepositorioPedido
     {
     }
 }
+

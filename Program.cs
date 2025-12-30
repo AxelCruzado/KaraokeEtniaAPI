@@ -1,12 +1,13 @@
-using KaraokeNoeliasApi.Domain.Interfaces;
-using KaraokeNoeliasApi.Infrastructure.Data;
-using KaraokeNoeliasApi.Infrastructure.Services;
+﻿using KaraokeEtniaApi.Domain.Entities;
+using KaraokeEtniaApi.Domain.Interfaces;
+using KaraokeEtniaApi.Infrastructure.Data;
+using KaraokeEtniaApi.Infrastructure.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
-using KaraokeNoeliasApi.API.Hubs;
+using KaraokeEtniaApi.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -38,7 +39,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Configurar Swagger
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "Karaoke Noelias API", Version = "v1" });
+    c.SwaggerDoc("v1", new() { Title = "Karaoke Etnia API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
@@ -63,7 +64,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configurar autenticaci�n JWT
+// Configurar autenticación JWT
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
@@ -86,7 +87,7 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 // Registrar SignalR
 builder.Services.AddSignalR();
 
-// Construir la aplicaci�n
+// Construir la aplicación
 var app = builder.Build();
 
 // Configurar el pipeline de middleware
@@ -131,4 +132,23 @@ app.UseEndpoints(endpoints =>
     endpoints.MapHub<PedidoHub>("/pedidoHub");
 });
 
+// Sembrar el usuario administrador inicial si no existe
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDbContext>();
+    if (!context.Usuarios.Any())
+    {
+        context.Usuarios.Add(new Usuario
+        {
+            NombreUsuario = "admin",
+            ContraseñaHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+            Rol = "Administrador",
+            FechaRegistro = DateTime.Now
+        });
+        context.SaveChanges();
+    }
+}
+
 app.Run();
+

@@ -1,4 +1,4 @@
-﻿namespace KaraokeNoeliasApi.Application.DTOs
+﻿namespace KaraokeEtniaApi.Application.DTOs
 {
     public class ReporteDiarioDto
     {
@@ -15,3 +15,4 @@
         public decimal Total { get; set; }
     }
 }
+

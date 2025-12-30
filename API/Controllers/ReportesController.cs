@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KaraokeNoeliasApi.Infrastructure.Data;
-using KaraokeNoeliasApi.Application.DTOs;
+using KaraokeEtniaApi.Infrastructure.Data;
+using KaraokeEtniaApi.Application.DTOs;
+using KaraokeEtniaApi.Domain.Entities;
 
-namespace KaraokeNoeliasApi.API.Controllers
+namespace KaraokeEtniaApi.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -16,23 +17,49 @@ namespace KaraokeNoeliasApi.API.Controllers
             _context = context;
         }
 
-        // GET: api/reportes/mensual?year=2025&month=5
+        // GET: api/reportes/movimientos-actuales
+        [HttpGet("movimientos-actuales")]
+        public async Task<IActionResult> GetMovimientosActuales()
+        {
+            var mesasOcupadas = await _context.Mesas.CountAsync(m => m.Estado == EstadoMesa.Ocupado);
+            var ventasActuales = await _context.PedidosActivos.SumAsync(p => (decimal?)p.Total) ?? 0;
+            var ticketsDisponiblesTotales = await _context.Mesas.SumAsync(m => (int?)m.TicketsDisponibles) ?? 0;
+            var pedidosActivos = await _context.PedidosActivos.CountAsync();
+
+            var movimientos = new
+            {
+                mesasOcupadas,
+                ventasActuales,
+                ticketsDisponiblesTotales,
+                pedidosActivos
+            };
+
+            return Ok(movimientos);
+        }
+
         [HttpGet("mensual")]
         public async Task<ActionResult<ReporteMensualDto>> GetReporteMensual([FromQuery] int year, [FromQuery] int month)
         {
-            var inicioMes = new DateTime(year, month, 1, 20, 0, 0); // 20:00 del primer día
-            var finMes = new DateTime(year, month + 1, 1, 7, 0, 0); // 07:00 del primer día del siguiente mes
-
-            var totalMes = await _context.PedidosHistorial
-                .Where(p => p.CerradoEn >= inicioMes && p.CerradoEn < finMes)
-                .SumAsync(p => (decimal?)p.Total) ?? 0;
-
-            var reporte = new ReporteMensualDto
+            try
             {
-                TotalMes = totalMes
-            };
+                var inicioMes = new DateTime(year, month, 1, 20, 0, 0); // 20:00 del primer día
+                var finMes = inicioMes.AddMonths(1).Date.AddHours(7); // 07:00 del primer día del siguiente mes
 
-            return Ok(reporte);
+                var totalMes = await _context.PedidosHistorial
+                    .Where(p => p.CerradoEn >= inicioMes && p.CerradoEn < finMes)
+                    .SumAsync(p => (decimal?)p.Total) ?? 0;
+
+                var reporte = new ReporteMensualDto
+                {
+                    TotalMes = totalMes
+                };
+
+                return Ok(reporte);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = $"Error al generar reporte: {ex.Message}" });
+            }
         }
 
         // GET: api/reportes/diario?year=2025&month=5&day=10

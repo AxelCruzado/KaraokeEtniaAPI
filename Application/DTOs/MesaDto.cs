@@ -1,4 +1,4 @@
-﻿namespace KaraokeNoeliasApi.Application.DTOs
+﻿namespace KaraokeEtniaApi.Application.DTOs
 {
     public class MesaDto
     {
@@ -10,3 +10,4 @@
         public List<PedidoActivoDto> PedidosActivos { get; set; }
     }
 }
+

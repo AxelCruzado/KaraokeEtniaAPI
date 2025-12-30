@@ -1,5 +1,5 @@
 ﻿// Domain/Entities/Usuario.cs
-namespace KaraokeNoeliasApi.Domain.Entities;
+namespace KaraokeEtniaApi.Domain.Entities;
 
 public class Usuario
 {

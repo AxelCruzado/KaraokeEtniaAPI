@@ -1,13 +1,13 @@
-﻿using KaraokeNoeliasApi.Infrastructure.Data;
+﻿using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KaraokeNoeliasApi.Domain.Entities;
-using KaraokeNoeliasApi.Application.DTOs;
+using KaraokeEtniaApi.Domain.Entities;
+using KaraokeEtniaApi.Application.DTOs;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
-namespace KaraokeNoeliasApi.API.Controllers;
+namespace KaraokeEtniaApi.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -218,8 +218,9 @@ public class CategoriasController : ControllerBase
                 await image.CopyToAsync(stream);
             }
 
-            // Devolvemos una URL absoluta
-            var imageUrl = $"https://localhost:7226/images/categorias/{fileName}";
+            // Devolvemos una URL dinámica basada en la petición actual
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            var imageUrl = $"{baseUrl}/images/categorias/{fileName}";
             Console.WriteLine($"Imagen guardada correctamente: {imageUrl}");
             return imageUrl;
         }

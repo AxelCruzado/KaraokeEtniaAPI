@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace KaraokeNoeliasApi.API.Hubs;
+namespace KaraokeEtniaApi.API.Hubs;
 
 public class PedidoHub : Hub
 {

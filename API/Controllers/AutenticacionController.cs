@@ -1,6 +1,6 @@
 ﻿// API/Controllers/AutenticacionController.cs
-using KaraokeNoeliasApi.Domain.Entities;
-using KaraokeNoeliasApi.Infrastructure.Data;
+using KaraokeEtniaApi.Domain.Entities;
+using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,9 +9,9 @@ using System.Security.Claims;
 using System.Text;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
-using KaraokeNoeliasApi.Application.DTOs;
+using KaraokeEtniaApi.Application.DTOs;
 
-namespace KaraokeNoeliasApi.API.Controllers;
+namespace KaraokeEtniaApi.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -35,12 +35,12 @@ public class AutenticacionController : ControllerBase
                 .FirstOrDefaultAsync(u => u.NombreUsuario == loginDto.NombreUsuario);
             if (usuario == null)
             {
-                return Unauthorized("Usuario o contraseña incorrectos.");
+                return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
             }
 
             if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, usuario.ContraseñaHash))
             {
-                return Unauthorized("Usuario o contraseña incorrectos.");
+                return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
             }
 
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
@@ -64,12 +64,12 @@ public class AutenticacionController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest($"Error al iniciar sesión: {ex.Message}");
+            return BadRequest(new { message = $"Error al iniciar sesión: {ex.Message}" });
         }
     }
 
     [HttpPost("registrar")]
-    [Authorize(Roles = "Administrador")] // Solo administradores pueden registrar usuarios
+    [AllowAnonymous] // Permitir acceso para el primer usuario, validación manual adentro
     public async Task<IActionResult> Registrar([FromBody] RegistrarUsuarioDto registrarDto)
     {
         try
@@ -77,7 +77,7 @@ public class AutenticacionController : ControllerBase
             // Validar que el nombre de usuario no exista
             if (await _context.Usuarios.AnyAsync(u => u.NombreUsuario == registrarDto.NombreUsuario))
             {
-                return BadRequest("El nombre de usuario ya existe.");
+                return BadRequest(new { message = "El nombre de usuario ya existe." });
             }
 
             // Determinar el rol: si no hay usuarios, el primero será Administrador
@@ -91,13 +91,13 @@ public class AutenticacionController : ControllerBase
                 // Validar el rol si no es el primer usuario
                 if (!Enum.TryParse<Rol>(registrarDto.Rol, true, out var rol))
                 {
-                    return BadRequest("Rol inválido. Debe ser 'Cliente', 'Mesera', 'Administrador' o 'Musica'.");
+                    return BadRequest(new { message = "Rol inválido. Debe ser 'Cliente', 'Mesera', 'Administrador' o 'Musica'." });
                 }
                 rolFinal = registrarDto.Rol;
             }
 
             // Hashear la contraseña con BCrypt
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(registrarDto.Contraseña);
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(registrarDto.Password);
 
             // Crear el nuevo usuario
             var nuevoUsuario = new Usuario
@@ -112,11 +112,11 @@ public class AutenticacionController : ControllerBase
             _context.Usuarios.Add(nuevoUsuario);
             await _context.SaveChangesAsync();
 
-            return Ok("Usuario registrado exitosamente.");
+            return Ok(new { message = "Usuario registrado exitosamente." });
         }
         catch (Exception ex)
         {
-            return BadRequest($"Error al registrar usuario: {ex.Message}");
+            return BadRequest(new { message = $"Error al registrar usuario: {ex.Message}" });
         }
     }
 }

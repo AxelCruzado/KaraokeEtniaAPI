@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KaraokeNoeliasApi.Infrastructure.Data;
-using KaraokeNoeliasApi.Application.DTOs;
-using KaraokeNoeliasApi.Domain.Entities;
+using KaraokeEtniaApi.Infrastructure.Data;
+using KaraokeEtniaApi.Application.DTOs;
+using KaraokeEtniaApi.Domain.Entities;
 
-namespace KaraokeNoeliasApi.API.Controllers
+namespace KaraokeEtniaApi.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -20,31 +20,40 @@ namespace KaraokeNoeliasApi.API.Controllers
         [HttpGet("resumen")]
         public async Task<ActionResult<object>> GetResumenCajaChica([FromQuery] int year, [FromQuery] int month)
         {
-            var inicioMes = new DateTime(year, month, 1, 20, 0, 0);
-            var finMes = new DateTime(year, month + 1, 1, 7, 0, 0);
-
-            var totalVentas = await _context.PedidosHistorial
-                .Where(p => p.CerradoEn >= inicioMes && p.CerradoEn < finMes)
-                .SumAsync(p => (decimal?)p.Total) ?? 0;
-
-            var gastos = await _context.Gastos
-                .Where(g => g.Fecha.Date >= inicioMes.Date && g.Fecha.Date < finMes.Date)
-                .Select(g => new { Total = g.Monto, Descripcion = g.Descripcion, Fecha = g.Fecha })
-                .ToListAsync();
-            var totalGastos = gastos.Sum(g => g.Total);
-
-            var saldoInicial = 0m; // Ajusta según tu lógica
-            var saldoFinal = saldoInicial + totalVentas - totalGastos;
-
-            var resumen = new
+            try
             {
-                SaldoInicial = saldoInicial,
-                Ingresos = totalVentas,
-                Gastos = gastos,
-                SaldoFinal = saldoFinal
-            };
+                var inicioMes = new DateTime(year, month, 1, 20, 0, 0);
+                var finMes = inicioMes.AddMonths(1).Date.AddHours(7);
 
-            return Ok(resumen);
+                var totalVentas = await _context.PedidosHistorial
+                    .Where(p => p.CerradoEn >= inicioMes && p.CerradoEn < finMes)
+                    .SumAsync(p => (decimal?)p.Total) ?? 0;
+
+                var gastos = await _context.Gastos
+                    .Where(g => g.Fecha >= inicioMes.Date && g.Fecha < finMes.Date)
+                    .Select(g => new { Total = g.Monto, Descripcion = g.Descripcion, Fecha = g.Fecha })
+                    .ToListAsync();
+                
+                var totalGastos = gastos.Sum(g => g.Total);
+
+                var saldoInicial = 0m; 
+                var saldoFinal = saldoInicial + totalVentas - totalGastos;
+
+                var resumen = new
+                {
+                    SaldoInicial = saldoInicial,
+                    Ingresos = totalVentas,
+                    Gastos = gastos,
+                    TotalGastos = totalGastos,
+                    SaldoFinal = saldoFinal
+                };
+
+                return Ok(resumen);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = $"Error al obtener resumen de caja chica: {ex.Message}" });
+            }
         }
 
         [HttpPost("registrar-gasto")]

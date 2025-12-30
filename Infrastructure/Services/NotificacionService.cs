@@ -1,6 +1,7 @@
-﻿namespace KaraokeNoeliasApi.Infrastructure.Services
+﻿namespace KaraokeEtniaApi.Infrastructure.Services
 {
     public class NotificacionService
     {
     }
 }
+

@@ -1,4 +1,4 @@
-﻿namespace KaraokeNoeliasApi.Application.DTOs
+﻿namespace KaraokeEtniaApi.Application.DTOs
 {
     public class SolicitudCancionRequestDto
     {
@@ -8,3 +8,4 @@
         public string Tipo { get; set; } // "Escuchar" o "Cantar"
     }
 }
+
