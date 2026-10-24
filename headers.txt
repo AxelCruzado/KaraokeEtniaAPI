@@ -1,0 +1,9 @@
+HTTP/1.1 500 Internal Server Error
+Content-Type: application/json
+Date: Tue, 03 Feb 2026 05:36:25 GMT
+Server: Kestrel
+Cache-Control: no-cache,no-store
+Expires: -1
+Pragma: no-cache
+Transfer-Encoding: chunked
+

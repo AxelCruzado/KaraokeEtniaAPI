@@ -38,7 +38,6 @@ namespace KaraokeEtniaApi.Migrations
                         .HasDefaultValue("Activo");
 
                     b.Property<string>("ImagenUrl")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
@@ -252,7 +251,6 @@ namespace KaraokeEtniaApi.Migrations
                         .HasColumnType("INT");
 
                     b.Property<string>("ImagenUrl")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 

@@ -16,7 +16,7 @@ namespace KaraokeEtniaApi.Domain.Entities
         public string Nombre { get; set; }
 
         [StringLength(255)]
-        public string ImagenUrl { get; set; } // Usamos ImagenUrl como acordamos
+        public string? ImagenUrl { get; set; } // Usamos ImagenUrl como acordamos
 
         public EstadoCategoria Estado { get; set; } = EstadoCategoria.Activo;
 
