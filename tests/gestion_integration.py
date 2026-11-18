@@ -23,7 +23,7 @@ req(root+'/inventario',{'productoId':pid,'cantidad':1,'motivo':'','stockEsperado
 provider=req(root+'/proveedores',{'nombre':'TEST '+s,'documento':'TEST-'+s,'contacto':'demo'},a)
 purchase=req(root+'/compras',{'proveedorId':provider['id'],'documento':'COMPRA-'+s,'lineas':[{'productoId':pid,'cantidad':3,'costoUnitario':2.5}]},a)
 t=req('/api/caja/turnos',{'caja':'GESTION-'+s,'fecha':'2026-11-17','fondoInicial':100},a)
-payload={'turnoId':t['id'],'fechaOperacion':'2026-11-18T02:00:00','pagos':[{'medio':'Efectivo','importe':7.5}]}
+payload={'versionEsperada':next(x for x in data()['compras'] if x['id']==purchase['id'])['version'],'turnoId':t['id'],'fechaOperacion':'2026-11-18T02:00:00','pagos':[{'medio':'Efectivo','importe':7.5}]}
 req(root+f"/compras/{purchase['id']}/recibir",{**payload,'pagos':[{'medio':'Efectivo','importe':7}]},a,400)
 assert product()['stock']==2;assert next(x for x in data()['compras'] if x['id']==purchase['id'])['estado']=='Pendiente';print('Recepción inválida revierte stock y compra OK')
 req(root+f"/compras/{purchase['id']}/recibir",payload,a)

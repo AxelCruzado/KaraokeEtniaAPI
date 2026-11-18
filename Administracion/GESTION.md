@@ -45,7 +45,7 @@ POST proveedores {nombre, documento, contacto}.
 POST inventario {productoId, cantidad, motivo, stockEsperado}.
 POST inventario/{id}/minimo {cantidad}.
 POST compras {proveedorId, documento, lineas:[{productoId,cantidad,costoUnitario}]}.
-POST compras/{id}/recibir {turnoId, fechaOperacion, pagos:[{medio,importe}]}.
+POST compras/{id}/recibir {turnoId, fechaOperacion, pagos:[{medio,importe}], versionEsperada}.
 POST usuarios/{id}/estado {activo, rol, motivo}.
 
 Escrituras requieren Administrador. FechaOperacion usa hora local America/Lima
@@ -102,3 +102,17 @@ cancelación, rechazo por stock/turno/permisos, reversión, nueva recepción,
 conservación de primer cierre/R01 y consulta de más de 200 movimientos y 100
 acciones. `tests/gestion_integration.py` y `tests/caja_integration.py` comprueban
 regresiones de compras, pedidos, usuarios y caja.
+
+## Versión esperada al recibir
+
+`versionEsperada` es obligatoria y positiva, tomada de la compra que muestra la
+interfaz. Se compara con la versión actual bajo el bloqueo de la compra, antes de
+leer/modificar sus líneas o tocar stock/caja. Omitirla o enviar cero/negativos
+produce 400. Una versión antigua produce 409 y exige actualizar y revisar la
+compra, aunque el total sea idéntico. No se reintenta silenciosamente con una
+versión nueva. Esta actualización del contrato no necesita migración de base.
+
+Prueba específica: `python tests/recepcion_version_integration.py`, con
+CAJA_TEST_CA para el certificado local. Cambia un producto manteniendo el total,
+verifica 409 y ausencia de efectos en compra, stock, caja y auditoría, y después
+recibe la versión actual una sola vez. Los clientes API deben enviar el campo.

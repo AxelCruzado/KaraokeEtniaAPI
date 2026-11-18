@@ -23,7 +23,7 @@ req(root+f'/compras/{id}/corregir',body,a)
 assert product()['stock']==before and purchase(id)['lineas'][0]['cantidad']==4
 req(root+f'/compras/{id}/corregir',body,a,409);print('Corrección pendiente, motivo, permisos y versión OK',flush=True)
 turn=req('/api/caja/turnos',{'caja':'CICLO-'+nonce,'fecha':'2026-11-17','fondoInicial':100},a);troot='/api/caja/turnos/'+turn['id']
-pay={'turnoId':turn['id'],'fechaOperacion':'2026-11-18T02:00:00','pagos':[{'medio':'Efectivo','importe':8}]}
+pay={'versionEsperada':purchase(id)['version'],'turnoId':turn['id'],'fechaOperacion':'2026-11-18T02:00:00','pagos':[{'medio':'Efectivo','importe':8}]}
 req(root+f'/compras/{id}/recibir',pay,a);x=purchase(id);assert product()['stock']==14
 first=req(troot+'/cierres',{'claveOperacion':'close-'+nonce,'contado':92},a)
 saved=req(troot,token=a)['cierres'][0]
@@ -44,7 +44,7 @@ assert req('/api/caja/reportes/'+r['id'],token=a)['snapshotJson']==snapshot
 req(root+f'/compras/{id}/revertir',rev,a,409);assert product()['stock']==10
 print('Reversión atómica; stock/turno/permisos; cierre y R01 conservados OK',flush=True)
 x=purchase(id);req(root+f'/compras/{id}/corregir',{'datos':inputs('CORREGIDA-'+nonce,2),'motivo':'Recepción corregida','versionEsperada':x['version']},a)
-pay['pagos'][0]['importe']=4
+pay['versionEsperada']=purchase(id)['version'];pay['pagos'][0]['importe']=4
 req(root+f'/compras/{id}/recibir',pay,a);assert product()['stock']==12
 assert req(troot,token=a)['resumen']['egresos']==4
 cancel=create('CANCELAR');x=purchase(cancel)

@@ -9,7 +9,7 @@ public record Ajuste(int ProductoId,int Cantidad,string Motivo,int StockEsperado
 public record Minimo(int Cantidad);
 public record CompraInput(int ProveedorId,string Documento,List<LineaInput> Lineas);
 public record LineaInput(int ProductoId,int Cantidad,decimal CostoUnitario);
-public record Recepcion(string TurnoId,List<PagoInput> Pagos,DateTime FechaOperacion);
+public record Recepcion(string TurnoId,List<PagoInput> Pagos,DateTime FechaOperacion,int VersionEsperada);
 public record CambioCompra(CompraInput Datos,string Motivo,int VersionEsperada);
 public record MotivoCompra(string Motivo,int VersionEsperada);
 public record EstadoUsuario(bool Activo,string Rol,string Motivo);
@@ -30,10 +30,12 @@ public class GestionController(AppDbContext db,CajaDbContext ledger,CajaService 
  public async Task<IActionResult> Comprar(CompraInput i){if(string.IsNullOrWhiteSpace(i.Documento)||i.Documento.Length>100||i.Lineas==null||i.Lineas.Count==0||i.Lineas.Any(l=>l.Cantidad<=0||l.CostoUnitario<=0||decimal.Round(l.CostoUnitario,2)!=l.CostoUnitario)||i.Lineas.Select(l=>l.ProductoId).Distinct().Count()!=i.Lineas.Count)throw new CajaError("Compra inválida: documento, productos únicos, cantidades y costos positivos.");if(!await db.Proveedores.AnyAsync(p=>p.Id==i.ProveedorId&&p.Activo))throw new CajaError("Proveedor inexistente o inactivo.");if(await db.Productos.CountAsync(p=>i.Lineas.Select(l=>l.ProductoId).Contains(p.Id))!=i.Lineas.Count)throw new CajaError("Producto inexistente.");var c=new Compra{ProveedorId=i.ProveedorId,Documento=i.Documento.Trim(),Usuario=Who,Lineas=i.Lineas.Select(l=>new CompraLinea{ProductoId=l.ProductoId,Cantidad=l.Cantidad,CostoUnitario=l.CostoUnitario}).ToList()};db.Compras.Add(c);Audit("Registro de compra",c.Documento);await db.SaveChangesAsync();return Ok(new{c.Id,c.Estado});}
  [HttpPost("compras/{id}/recibir"),Authorize(Roles="Administrador")]
  public async Task<IActionResult> Recibir(int id,Recepcion i){
+  if(i.VersionEsperada<=0)throw new CajaError("Indique una versionEsperada positiva para recibir la compra.");
   // One transaction spans receipt, inventory ledger and the corresponding cash expense.
   await ledger.Database.CloseConnectionAsync();ledger.Database.SetDbConnection(db.Database.GetDbConnection());
   await using var tx=await db.Database.BeginTransactionAsync();await ledger.Database.UseTransactionAsync(tx.GetDbTransaction());
   var rows=await db.Compras.FromSqlInterpolated($"SELECT * FROM Compras WHERE Id={id} FOR UPDATE").ToListAsync();var c=rows.SingleOrDefault()??throw new CajaError("Compra no encontrada.",404);
+  if(c.Version!=i.VersionEsperada)throw new CajaError("La compra cambió desde que la consultó. Actualice y revise sus productos antes de recibirla.",409);
   if(c.Estado!="Pendiente")throw new CajaError("Compra ya recibida; no se duplica stock ni egreso.",409);
   await db.Entry(c).Collection(x=>x.Lineas).LoadAsync();var turno=await ledger.Turnos.SingleOrDefaultAsync(t=>t.Id==i.TurnoId)??throw new CajaError("Turno no encontrado.");
   foreach(var l in c.Lineas){var product=await db.Productos.FindAsync(l.ProductoId)??throw new CajaError("Producto no encontrado.");product.Stock=checked(product.Stock+l.Cantidad);}
