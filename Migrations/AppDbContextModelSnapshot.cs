@@ -22,6 +22,34 @@ namespace KaraokeEtniaApi.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.AccionAdministrativa", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Detalle")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AccionesAdministrativas");
+                });
+
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Categoria", b =>
                 {
                     b.Property<int>("Id")
@@ -49,6 +77,74 @@ namespace KaraokeEtniaApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categorias", (string)null);
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Compra", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Documento")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("MovimientoCajaId")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ProveedorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProveedorId", "Documento")
+                        .IsUnique();
+
+                    b.ToTable("Compras");
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.CompraLinea", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CompraId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CostoUnitario")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("decimal(14,2)");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompraId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("CompraLineas");
                 });
 
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Gasto", b =>
@@ -110,6 +206,41 @@ namespace KaraokeEtniaApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Mesas", (string)null);
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.MovimientoStock", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Anterior")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Posterior")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("MovimientosStock");
                 });
 
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.PedidoActivo", b =>
@@ -263,9 +394,13 @@ namespace KaraokeEtniaApi.Migrations
                         .HasColumnType("DECIMAL(10,2)");
 
                     b.Property<int>("Stock")
+                        .IsConcurrencyToken()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
+
+                    b.Property<int>("StockMinimo")
+                        .HasColumnType("int");
 
                     b.Property<int>("TicketsPorUnidad")
                         .ValueGeneratedOnAdd()
@@ -277,6 +412,38 @@ namespace KaraokeEtniaApi.Migrations
                     b.HasIndex("CategoriaId");
 
                     b.ToTable("Productos", (string)null);
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Proveedor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Contacto")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Documento")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Documento")
+                        .IsUnique();
+
+                    b.ToTable("Proveedores");
                 });
 
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.SolicitudCancion", b =>
@@ -330,6 +497,11 @@ namespace KaraokeEtniaApi.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("ContraseñaHash")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -352,6 +524,45 @@ namespace KaraokeEtniaApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Usuarios", (string)null);
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Compra", b =>
+                {
+                    b.HasOne("KaraokeEtniaApi.Domain.Entities.Proveedor", "Proveedor")
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.CompraLinea", b =>
+                {
+                    b.HasOne("KaraokeEtniaApi.Domain.Entities.Compra", null)
+                        .WithMany("Lineas")
+                        .HasForeignKey("CompraId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KaraokeEtniaApi.Domain.Entities.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.MovimientoStock", b =>
+                {
+                    b.HasOne("KaraokeEtniaApi.Domain.Entities.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
                 });
 
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.PedidoActivo", b =>
@@ -439,6 +650,11 @@ namespace KaraokeEtniaApi.Migrations
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Categoria", b =>
                 {
                     b.Navigation("Productos");
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Compra", b =>
+                {
+                    b.Navigation("Lineas");
                 });
 
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Mesa", b =>

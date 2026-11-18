@@ -1,10 +1,17 @@
-﻿using KaraokeEtniaApi.Domain.Entities;
+using KaraokeEtniaApi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace KaraokeEtniaApi.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {
+    public DbSet<Proveedor> Proveedores => Set<Proveedor>();
+    public DbSet<Compra> Compras => Set<Compra>();
+    public DbSet<CompraLinea> CompraLineas => Set<CompraLinea>();
+    public DbSet<MovimientoStock> MovimientosStock => Set<MovimientoStock>();
+    public DbSet<AccionAdministrativa> AccionesAdministrativas => Set<AccionAdministrativa>();
+    public string MotivoStock { get; set; } = "Registro de pedido";
+    private readonly IHttpContextAccessor? actor;
     public DbSet<Mesa> Mesas { get; set; }
     public DbSet<PedidoActivo> PedidosActivos { get; set; }
     public DbSet<PedidoDetalle> PedidoDetalles { get; set; }
@@ -16,12 +23,22 @@ public class AppDbContext : DbContext
     public DbSet<PedidoDetalleHistorial> PedidoDetallesHistorial { get; set; }
     public DbSet<SolicitudCancion> SolicitudesCanciones { get; set; }
 
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor? actor = null) : base(options)
     {
+        this.actor = actor;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Producto>().Property(p => p.Stock).IsConcurrencyToken();
+        modelBuilder.Entity<Usuario>().Property(u => u.Activo).HasDefaultValue(true);
+        modelBuilder.Entity<Proveedor>().Property(p => p.Documento).HasMaxLength(100);
+        modelBuilder.Entity<Proveedor>().HasIndex(p => p.Documento).IsUnique();
+        modelBuilder.Entity<Compra>().Property(c => c.Documento).HasMaxLength(100);
+        modelBuilder.Entity<Compra>().HasIndex(c => new { c.ProveedorId, c.Documento }).IsUnique();
+        modelBuilder.Entity<CompraLinea>().Property(l => l.CostoUnitario).HasPrecision(14,2);
+        modelBuilder.Entity<CompraLinea>().HasOne(l => l.Producto).WithMany().OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<MovimientoStock>().HasOne(l => l.Producto).WithMany().OnDelete(DeleteBehavior.Restrict);
         // Configuración de Mesa
         modelBuilder.Entity<Mesa>(entity =>
         {
@@ -206,5 +223,20 @@ public class AppDbContext : DbContext
             entity.Property(u => u.Rol).IsRequired().HasMaxLength(20).HasConversion<string>();
             entity.Property(u => u.FechaRegistro);
         });
+    }
+    public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        ChangeTracker.DetectChanges();
+        if(ChangeTracker.Entries().Any(e => (e.Entity is MovimientoStock or AccionAdministrativa) && (e.State==EntityState.Deleted||e.State==EntityState.Modified))) throw new InvalidOperationException("El historial es de solo adición.");
+        if(actor?.HttpContext?.User.IsInRole("Administrador")==true)
+            foreach(var e in ChangeTracker.Entries().Where(e => (e.Entity is Producto or Proveedor or Compra or Usuario) && (e.State==EntityState.Modified||e.State==EntityState.Added)).ToList())
+                AccionesAdministrativas.Add(new(){Usuario=actor.HttpContext.User.Identity!.Name!,Accion=e.State.ToString()+" "+e.Metadata.ClrType.Name,Detalle=string.Join(",",e.Properties.Where(p=>p.Metadata.Name!="ContraseñaHash"&&(p.IsModified||e.State==EntityState.Added)).Select(p=>p.Metadata.Name))});
+        foreach(var e in ChangeTracker.Entries<Producto>().Where(e => e.State == EntityState.Added || e.Property(p=>p.Stock).IsModified).ToList())
+        {
+            if(e.Entity.Stock < 0 || e.Entity.StockMinimo < 0) throw new InvalidOperationException("Stock y mínimo deben ser no negativos.");
+            var anterior=e.State==EntityState.Added?0:e.Property(p=>p.Stock).OriginalValue;
+            if(anterior!=e.Entity.Stock) MovimientosStock.Add(new MovimientoStock { Producto=e.Entity, Anterior=anterior, Posterior=e.Entity.Stock, Motivo=e.State==EntityState.Added?"Stock inicial":MotivoStock, Usuario=actor?.HttpContext?.User.Identity?.Name ?? "Sistema" });
+        }
+        return await base.SaveChangesAsync(ct);
     }
 }

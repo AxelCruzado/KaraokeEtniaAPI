@@ -33,7 +33,7 @@ public class AutenticacionController : ControllerBase
         {
             var usuario = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.NombreUsuario == loginDto.NombreUsuario);
-            if (usuario == null)
+            if (usuario == null || !usuario.Activo)
             {
                 return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
             }

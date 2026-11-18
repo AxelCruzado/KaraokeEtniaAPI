@@ -13,6 +13,7 @@ using KaraokeEtniaApi.API.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios al contenedor
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -74,6 +75,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
+        options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents { OnTokenValidated = async context => { var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>(); var user = await db.Usuarios.SingleOrDefaultAsync(u => u.NombreUsuario == context.Principal!.Identity!.Name); if(user == null || !user.Activo || !context.Principal!.IsInRole(user.Rol)) context.Fail("Usuario desactivado o permisos modificados."); } };
         options.TokenValidationParameters = new()
         {
             ValidateIssuer = true,

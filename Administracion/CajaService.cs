@@ -53,11 +53,11 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones)
     }
     async Task<T> Locked<T>(string id, Func<TurnoCaja, Task<T>> action)
     {
-        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        await using var tx = db.Database.CurrentTransaction == null ? await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted) : null;
         var turns = await db.Turnos.FromSqlInterpolated($"SELECT * FROM Caja_TurnoCaja WHERE Id = {id} FOR UPDATE").ToListAsync();
         var turn = turns.SingleOrDefault() ?? throw new CajaError("Turno no encontrado.", 404);
         var result = await action(turn);
-        await db.SaveChangesAsync(); await tx.CommitAsync(); return result;
+        await db.SaveChangesAsync(); if(tx != null) await tx.CommitAsync(); return result;
     }
     void Audit(TurnoCaja t, string code, string action, string who, string reason, object before, object after) => db.Auditorias.Add(new() { TurnoId = t.Id, EntidadCodigo = code, Accion = action, Usuario = who, Motivo = reason, AnteriorJson = Serialize(before), PosteriorJson = Serialize(after) });
     public async Task<TurnoCaja> Apertura(AperturaInput i, string user)
@@ -101,6 +101,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones)
     public Task<MovimientoCaja> Corregir(string turnoId, string id, CorreccionInput i, string user) => Locked(turnoId, async t =>
     {
         Open(t); var reason = Text(i.Motivo, "Motivo", 500);
+        if(await operaciones.Compras.AnyAsync(c=>c.MovimientoCajaId==id)) throw new CajaError("El egreso está vinculado a una recepción de compra; no se modifica ni anula aisladamente.",409);
         var m = await db.Movimientos.Include(x => x.Pagos).SingleOrDefaultAsync(x => x.Id == id && x.TurnoId == t.Id) ?? throw new CajaError("Movimiento no encontrado.", 404);
         if (m.Version != i.VersionEsperada || m.Anulado) throw new CajaError("Versión modificada o movimiento anulado.", 409);
         Payments(i.Pagos, i.Importe); Category(m.Tipo, m.Naturaleza, i.Categoria); var before = JsonSerializer.SerializeToElement(m, Json);
@@ -112,6 +113,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones)
     public Task<MovimientoCaja> Anular(string turnoId, string id, AnulacionInput i, string user) => Locked(turnoId, async t =>
     {
         Open(t); var reason = Text(i.Motivo, "Motivo", 500);
+        if(await operaciones.Compras.AnyAsync(c=>c.MovimientoCajaId==id)) throw new CajaError("El egreso está vinculado a una recepción de compra; no se modifica ni anula aisladamente.",409);
         var m = await db.Movimientos.Include(x => x.Pagos).SingleOrDefaultAsync(x => x.Id == id && x.TurnoId == t.Id) ?? throw new CajaError("Movimiento no encontrado.", 404);
         if (m.Version != i.VersionEsperada || m.Anulado == i.Anulado) throw new CajaError("La versión o estado ya cambió; no se aplicó dos veces.", 409);
         var before = JsonSerializer.SerializeToElement(m, Json); m.Anulado = i.Anulado; m.Version++;

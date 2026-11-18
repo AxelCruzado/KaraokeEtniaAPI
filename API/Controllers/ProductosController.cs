@@ -1,4 +1,4 @@
-﻿using KaraokeEtniaApi.Infrastructure.Data;
+using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeEtniaApi.Domain.Entities;
@@ -83,6 +83,7 @@ public class ProductosController : ControllerBase
         return Ok(producto);
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador")]
     [HttpPost]
     public async Task<IActionResult> CrearProducto([FromForm] ProductoDto productoDto)
     {
@@ -149,6 +150,7 @@ public class ProductosController : ControllerBase
         return CreatedAtAction(nameof(GetProducto), new { id = producto.Id }, productoDtoResponse);
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador")]
     [HttpPut("{id}")]
     public async Task<IActionResult> ActualizarProducto(int id, [FromForm] ProductoDto productoDto)
     {
@@ -198,7 +200,7 @@ public class ProductosController : ControllerBase
         producto.Nombre = productoDto.Nombre;
         producto.ImagenUrl = imageUrl;
         producto.CategoriaId = productoDto.CategoriaId;
-        producto.Stock = productoDto.Stock;
+        if(producto.Stock != productoDto.Stock) return BadRequest(new {message="Use el ajuste justificado de inventario para modificar existencias."});
         producto.Precio = productoDto.Precio;
         producto.TicketsPorUnidad = productoDto.TicketsPorUnidad;
 
@@ -207,6 +209,7 @@ public class ProductosController : ControllerBase
         return NoContent();
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> EliminarProducto(int id)
     {

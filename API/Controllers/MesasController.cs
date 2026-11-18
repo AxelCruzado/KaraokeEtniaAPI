@@ -1,4 +1,4 @@
-﻿// API/Controllers/MesasController.cs
+// API/Controllers/MesasController.cs
 using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -171,6 +171,7 @@ public class MesasController : ControllerBase
         return Ok(pedidosDto);
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero")]
     [HttpPost("{id}/agregar-tickets")]
     public async Task<IActionResult> AgregarTickets(int id, [FromBody] AgregarTicketsDto request)
     {
@@ -204,6 +205,7 @@ public class MesasController : ControllerBase
     }
 
     // POST: api/mesas/{id}/devolver-saldo
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero")]
     [HttpPost("{id}/devolver-saldo")]
     public async Task<IActionResult> DevolverSaldo(int id)
     {
@@ -232,6 +234,7 @@ public class MesasController : ControllerBase
         }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero,Mesera")]
     [HttpPost("{id}/pedidos")]
     public async Task<IActionResult> RegistrarPedido(int id, [FromBody] PedidoRequestDto pedidoRequest)
     {
@@ -249,6 +252,7 @@ public class MesasController : ControllerBase
 
             foreach (var detalle in pedidoRequest.Detalles)
             {
+                if(detalle.Cantidad <= 0) throw new Exception("Cantidad inválida.");
                 var producto = await _context.Productos.FindAsync(detalle.ProductoId);
                 if (producto == null)
                     throw new Exception($"Producto con ID {detalle.ProductoId} no encontrado.");
@@ -336,6 +340,7 @@ public class MesasController : ControllerBase
         }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero")]
     [HttpPost("{id}/liberar")]
     public async Task<IActionResult> LiberarMesa(int id)
     {
@@ -421,6 +426,7 @@ public class MesasController : ControllerBase
         }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero")]
     [HttpPost]
     public async Task<IActionResult> CrearMesa([FromBody] MesaDto mesaDto)
     {
@@ -450,6 +456,7 @@ public class MesasController : ControllerBase
         }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero")]
     [HttpPut("{id}/estado")]
     public async Task<IActionResult> ActualizarEstado(int id, [FromBody] string nuevoEstado)
     {
@@ -476,6 +483,7 @@ public class MesasController : ControllerBase
         }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> EliminarMesa(int id)
     {
@@ -504,6 +512,7 @@ public class MesasController : ControllerBase
         }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero")]
     [HttpPost("bulk")]
     public async Task<IActionResult> CrearMesasMasivas([FromBody] BulkMesaDto bulkDto)
     {

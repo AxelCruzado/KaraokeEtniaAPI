@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeEtniaApi.Infrastructure.Data;
 using KaraokeEtniaApi.Application.DTOs;
@@ -7,7 +7,7 @@ using KaraokeEtniaApi.Domain.Entities;
 namespace KaraokeEtniaApi.API.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
+    [NonController]
     public class ReportesController : ControllerBase
     {
         private readonly AppDbContext _context;

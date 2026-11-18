@@ -4,6 +4,7 @@ namespace KaraokeEtniaApi.Domain.Entities;
 public class Usuario
 {
     public int Id { get; set; }
+    public bool Activo { get; set; } = true;
     public string NombreUsuario { get; set; }
     public string ContraseñaHash { get; set; } // Almacenaremos el hash de la contraseña
     public string Rol { get; set; } // Rol: Cliente, Mesera, Administrador

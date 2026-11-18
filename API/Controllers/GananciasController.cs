@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeEtniaApi.Infrastructure.Data;
 
 namespace KaraokeEtniaApi.API.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
+    [NonController]
     public class GananciasController : ControllerBase
     {
         private readonly AppDbContext _context;

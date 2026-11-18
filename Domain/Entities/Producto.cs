@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KaraokeEtniaApi.Domain.Entities
@@ -19,6 +19,7 @@ namespace KaraokeEtniaApi.Domain.Entities
 
         [Required]
         public int Stock { get; set; }
+        public int StockMinimo { get; set; }
 
         [Required]
         [Column(TypeName = "DECIMAL(10,2)")]

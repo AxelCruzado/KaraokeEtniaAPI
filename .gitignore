@@ -136,3 +136,6 @@ appsettings.Production.json
 
 # Secrets
 secrets.json
+
+# Python integration test bytecode
+__pycache__/

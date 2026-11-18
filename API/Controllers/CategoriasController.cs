@@ -1,4 +1,4 @@
-﻿using KaraokeEtniaApi.Infrastructure.Data;
+using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeEtniaApi.Domain.Entities;
@@ -70,6 +70,7 @@ public class CategoriasController : ControllerBase
         return Ok(categoria);
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador")]
     [HttpPost]
     public async Task<IActionResult> CrearCategoria([FromForm] CategoriaDto categoriaDto)
     {
@@ -121,6 +122,7 @@ public class CategoriasController : ControllerBase
         });
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador")]
     [HttpPut("{id}")]
     public async Task<IActionResult> ActualizarCategoria(int id, [FromForm] CategoriaDto categoriaDto)
     {
@@ -176,6 +178,7 @@ public class CategoriasController : ControllerBase
         return NoContent();
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> EliminarCategoria(int id)
     {

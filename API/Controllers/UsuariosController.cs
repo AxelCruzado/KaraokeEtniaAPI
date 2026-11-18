@@ -52,7 +52,9 @@ public class UsuariosController : ControllerBase
                 return BadRequest(new { message = "No se puede eliminar el usuario administrador principal." });
             }
 
-            _context.Usuarios.Remove(usuario);
+            if(usuario.NombreUsuario==User.Identity?.Name) return BadRequest(new{message="No puede desactivarse a sí mismo."});
+            usuario.Activo=false;
+            _context.AccionesAdministrativas.Add(new KaraokeEtniaApi.Domain.Entities.AccionAdministrativa { Usuario=User.Identity!.Name!, Accion="Desactivación de usuario", Detalle=usuario.NombreUsuario });
             await _context.SaveChangesAsync();
             return Ok(new { message = "Usuario eliminado." });
         }

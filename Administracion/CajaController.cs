@@ -53,6 +53,12 @@ public class CajaController(CajaDbContext db, CajaService service, IWebHostEnvir
         if (hastaOperacion != null) q = q.Where(m => m.FechaOperacion < hastaOperacion);
         return Ok(await q.OrderBy(m => m.FechaOperacion).ToListAsync());
     }
+    [HttpGet("pedidos-pendientes")]
+    public async Task<IActionResult> Pedidos([FromServices] KaraokeEtniaApi.Infrastructure.Data.AppDbContext operaciones)
+    {
+        var vinculados = await db.Ventas.Where(v => v.PedidoHistorialId != null).Select(v => v.PedidoHistorialId!.Value).ToListAsync();
+        return Ok(await operaciones.PedidosHistorial.AsNoTracking().Where(p => !vinculados.Contains(p.Id)).OrderByDescending(p => p.CerradoEn).Take(200).Select(p => new { p.Id, p.MesaId, p.Total, p.CerradoEn, p.MetodoPago }).ToListAsync());
+    }
     [HttpPost("ventas")]
     public async Task<IActionResult> Venta(VentaInput i) => Ok(await service.Venta(i));
     [HttpPost("turnos/{id}/movimientos")]

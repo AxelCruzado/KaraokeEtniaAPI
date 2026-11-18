@@ -1,4 +1,4 @@
-﻿// Services/PedidoService.cs
+// Services/PedidoService.cs
 using KaraokeEtniaApi.Domain.Entities;
 using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +25,7 @@ public class PedidoService : IPedidoService
         if (mesa == null)
             throw new Exception("Mesa no encontrada.");
 
+        if(cantidad <= 0) throw new Exception("Cantidad inválida.");
         var producto = await _context.Productos.FindAsync(productoId);
         if (producto == null)
             throw new Exception("Producto no encontrado.");

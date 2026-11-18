@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeEtniaApi.Infrastructure.Data;
 using KaraokeEtniaApi.Domain.Entities;
@@ -58,7 +58,8 @@ namespace KaraokeEtniaApi.API.Controllers
             return Ok(canciones);
         }
 
-        [HttpPost("{id}/actualizar-estado")]
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Musica")]
+    [HttpPost("{id}/actualizar-estado")]
         public async Task<ActionResult> ActualizarEstado(int id, [FromBody] string estado)
         {
             var solicitud = await _context.SolicitudesCanciones.FindAsync(id);
