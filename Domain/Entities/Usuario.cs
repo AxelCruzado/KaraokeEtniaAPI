@@ -1,4 +1,4 @@
-﻿// Domain/Entities/Usuario.cs
+// Domain/Entities/Usuario.cs
 namespace KaraokeEtniaApi.Domain.Entities;
 
 public class Usuario
@@ -15,5 +15,6 @@ public enum Rol
     Cliente,
     Mesera,
     Administrador,
-    Musica
+    Musica,
+    Cajero
 }

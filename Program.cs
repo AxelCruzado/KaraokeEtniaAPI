@@ -1,4 +1,5 @@
-﻿using KaraokeEtniaApi.Domain.Entities;
+using KaraokeEtniaApi.Administracion;
+using KaraokeEtniaApi.Domain.Entities;
 using KaraokeEtniaApi.Domain.Interfaces;
 using KaraokeEtniaApi.Infrastructure.Data;
 using KaraokeEtniaApi.Infrastructure.Services;
@@ -35,6 +36,11 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+builder.Services.AddDbContext<CajaDbContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        new MySqlServerVersion(new Version(8, 0, 0)), x => x.MigrationsHistoryTable("__CajaMigrationsHistory")));
+builder.Services.AddScoped<CajaService>();
 
 // Configurar Swagger
 builder.Services.AddSwaggerGen(c =>

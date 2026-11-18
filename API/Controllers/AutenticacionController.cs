@@ -1,4 +1,4 @@
-﻿// API/Controllers/AutenticacionController.cs
+// API/Controllers/AutenticacionController.cs
 using KaraokeEtniaApi.Domain.Entities;
 using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -69,7 +69,7 @@ public class AutenticacionController : ControllerBase
     }
 
     [HttpPost("registrar")]
-    [AllowAnonymous] // Permitir acceso para el primer usuario, validación manual adentro
+    [Authorize(Roles = "Administrador")] // El administrador inicial se crea al arrancar.
     public async Task<IActionResult> Registrar([FromBody] RegistrarUsuarioDto registrarDto)
     {
         try
@@ -89,11 +89,11 @@ public class AutenticacionController : ControllerBase
             else
             {
                 // Validar el rol si no es el primer usuario
-                if (!Enum.TryParse<Rol>(registrarDto.Rol, true, out var rol))
+                if (!Enum.TryParse<Rol>(registrarDto.Rol, true, out var rol) || !Enum.IsDefined(rol))
                 {
-                    return BadRequest(new { message = "Rol inválido. Debe ser 'Cliente', 'Mesera', 'Administrador' o 'Musica'." });
+                    return BadRequest(new { message = "Rol inválido. Debe ser 'Cliente', 'Mesera', 'Administrador' 'Musica' o 'Cajero'." });
                 }
-                rolFinal = registrarDto.Rol;
+                rolFinal = rol.ToString();
             }
 
             // Hashear la contraseña con BCrypt
