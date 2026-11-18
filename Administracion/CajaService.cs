@@ -110,10 +110,10 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones)
         db.Pagos.RemoveRange(m.Pagos); m.Pagos = i.Pagos.Select(p => new PagoCaja { Medio = p.Medio, Importe = p.Importe }).ToList();
         Audit(t, m.Codigo, "Corrección", user, reason, before, m); return m;
     });
-    public Task<MovimientoCaja> Anular(string turnoId, string id, AnulacionInput i, string user) => Locked(turnoId, async t =>
+    public Task<MovimientoCaja> Anular(string turnoId, string id, AnulacionInput i, string user, bool compraAutorizada = false) => Locked(turnoId, async t =>
     {
         Open(t); var reason = Text(i.Motivo, "Motivo", 500);
-        if(await operaciones.Compras.AnyAsync(c=>c.MovimientoCajaId==id)) throw new CajaError("El egreso está vinculado a una recepción de compra; no se modifica ni anula aisladamente.",409);
+        if(!compraAutorizada && await operaciones.Compras.AnyAsync(c=>c.MovimientoCajaId==id)) throw new CajaError("El egreso está vinculado a una recepción de compra; no se modifica ni anula aisladamente.",409);
         var m = await db.Movimientos.Include(x => x.Pagos).SingleOrDefaultAsync(x => x.Id == id && x.TurnoId == t.Id) ?? throw new CajaError("Movimiento no encontrado.", 404);
         if (m.Version != i.VersionEsperada || m.Anulado == i.Anulado) throw new CajaError("La versión o estado ya cambió; no se aplicó dos veces.", 409);
         var before = JsonSerializer.SerializeToElement(m, Json); m.Anulado = i.Anulado; m.Version++;

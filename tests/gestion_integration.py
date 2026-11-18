@@ -12,7 +12,8 @@ c=req('/api/autenticacion/login',{'nombreUsuario':name,'password':pw})['token']
 sql=f"INSERT INTO Categorias(Nombre,ImagenUrl,Estado) VALUES('TEST-{s}','','Activo'); INSERT INTO Productos(Nombre,ImagenUrl,Stock,Precio,TicketsPorUnidad,CategoriaId,StockMinimo) VALUES('TEST-{s}','',10,5,0,LAST_INSERT_ID(),2); SELECT LAST_INSERT_ID();"
 pid=int(subprocess.check_output(['docker','--host=unix:///var/run/docker.sock','exec','-i','etnia-dev-mysql','mysql','-uroot','-N','etnia_dev'],input=sql.encode()))
 root='/api/gestion'
-def data():return req(root+'/resumen',token=a)
+def data():
+ d=req(root+'/resumen',token=a);d['movimientos']=req(root+'/inventario/historial?tamano=200',token=a)['items'];d['acciones']=req(root+'/acciones/historial?tamano=200',token=a)['items'];return d
 def product():return next(p for p in data()['productos'] if p['id']==pid)
 req(root+'/inventario',{'productoId':pid,'cantidad':-8,'motivo':'Salida justificada de prueba','stockEsperado':10},c,403)
 req(root+'/inventario',{'productoId':pid,'cantidad':-8,'motivo':'Salida justificada de prueba','stockEsperado':10},a)

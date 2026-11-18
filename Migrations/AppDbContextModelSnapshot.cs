@@ -109,6 +109,9 @@ namespace KaraokeEtniaApi.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProveedorId", "Documento")

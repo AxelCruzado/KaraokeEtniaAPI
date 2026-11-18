@@ -58,3 +58,47 @@ Comprueba permisos, stock/alertas, rollback ante pago incorrecto, recepción ún
 vínculo a caja, desactivación/JWT y pedido → salida de stock → cobro sin duplicados.
 La suite anterior `tests/caja_integration.py` comprueba regresiones de caja/R01.
 Los registros de estas pruebas no son observaciones de tesis ni datos del negocio.
+
+## Corrección, cancelación y reversión
+
+Aplicar la migración VersionCompra. Las compras conservan una versión positiva.
+
+- POST compras/{id}/corregir: {datos: CompraInput, motivo, versionEsperada}.
+  Solo Pendiente o Revertida; conserva proveedor/documento/líneas anteriores
+  y posteriores en auditoría. Una versión desactualizada devuelve 409.
+- POST compras/{id}/cancelar: {motivo, versionEsperada}. Solo pendiente o
+  revertida; no borra el documento ni altera existencias o caja.
+- POST compras/{id}/revertir: {motivo, versionEsperada}. Solo recibida, con
+  todo el stock disponible y su turno original abierto (reapertura autorizada
+  si procede). Retira stock y anula el egreso original en la misma transacción.
+  Si falla, no cambia ninguno. No altera cierres ni reportes guardados.
+- Tras revertir, se puede corregir y volver a recibir el mismo documento.
+  Cada versión usa otra clave de recepción; no reutiliza el egreso anulado.
+- Flujo administrativo para errores de recepción/registro; no es un módulo de
+  devoluciones comerciales, notas de crédito o reembolsos de otro turno.
+
+Toda modificación exige Administrador, motivo y versión esperada. La historia
+conserva actor y fecha UTC, motivo y valores completos anteriores/posteriores.
+
+## Historial paginado
+
+`GET inventario/historial`: pagina, tamano, productoId, usuario, desde, hasta,
+buscar (motivo). `GET acciones/historial`: pagina, tamano, usuario, accion,
+desde, hasta, buscar (detalle). Las fechas son UTC: inicio incluido y fin excluido.
+Tamano entre 1 y 200 limita cada página, no el total consultable. La respuesta
+incluye items, total, pagina, tamano, totalPaginas. Orden descendente por fecha e
+identificador. Los filtros se aplican antes de contar y paginar.
+El resumen ya no envía historiales truncados: los clientes deben consultar estos
+endpoints. La interfaz ofrece filtros y botones Anterior/Siguiente separados.
+
+## Alcance de compra
+
+Recepción íntegra y pago íntegro de todas las líneas. Sin crédito, cuentas por
+pagar, recepción parcial ni devolución parcial. Estas variantes requieren otro
+modelo y no se presentan como implementadas.
+
+Pruebas adicionales: `tests/compras_ciclo_integration.py` ejecuta corrección,
+cancelación, rechazo por stock/turno/permisos, reversión, nueva recepción,
+conservación de primer cierre/R01 y consulta de más de 200 movimientos y 100
+acciones. `tests/gestion_integration.py` y `tests/caja_integration.py` comprueban
+regresiones de compras, pedidos, usuarios y caja.
