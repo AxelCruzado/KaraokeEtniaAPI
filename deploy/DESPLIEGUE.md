@@ -59,6 +59,20 @@ permisos 600, contraseñas nuevas y una clave JWT privada. El responsable consul
 ADMIN_PASSWORD directamente en el servidor para iniciar sesión como admin. No
 usar ni conservar la contraseña de desarrollo admin123 en el despliegue.
 
+## Comprobar la máquina antes de publicar
+
+Desde la carpeta deploy de la VM:
+
+```sh
+python3 check_server.py --json
+```
+
+El informe es de solo lectura: no instala software ni lee contraseñas. Indica
+sistema, arquitectura, RAM, disco, Docker/Compose y ocupación local de 80/443.
+Se puede compartir su salida con el asistente; no sustituye comprobar las reglas
+de red de Oracle ni la disponibilidad del plan gratuito. Ejecutarlo en el entorno
+Cloud de desarrollo no dice nada sobre la máquina del establecimiento.
+
 ## 3. Publicar
 
 ```sh
