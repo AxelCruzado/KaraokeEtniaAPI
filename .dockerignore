@@ -1,0 +1,13 @@
+.git
+bin
+obj
+.env*
+**/*.log
+tests
+response*.json
+headers*.txt
+appsettings.*.json
+**/.env*
+deploy/backups
+deploy/f01
+wwwroot/images

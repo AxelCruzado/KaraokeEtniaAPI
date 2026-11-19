@@ -1,0 +1,17 @@
+{
+  email {$TLS_EMAIL}
+}
+{$ETNIA_HOST} {
+  encode zstd gzip
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+  }
+  @backend path /api/* /pedidoHub /pedidoHub/* /images/* /health/*
+  handle @backend {
+    reverse_proxy api:8080
+  }
+  handle {
+    reverse_proxy frontend:80
+  }
+}

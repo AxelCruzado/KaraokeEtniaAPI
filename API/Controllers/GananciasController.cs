@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeEtniaApi.Infrastructure.Data;
@@ -6,6 +7,7 @@ namespace KaraokeEtniaApi.API.Controllers
 {
     [Route("api/[controller]")]
     [NonController]
+    [Authorize(Roles = "Administrador,Cajero")]
     public class GananciasController : ControllerBase
     {
         private readonly AppDbContext _context;

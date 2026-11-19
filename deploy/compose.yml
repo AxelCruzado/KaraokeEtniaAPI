@@ -1,0 +1,78 @@
+name: etnia
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: etnia
+      MYSQL_USER: etnia
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Generate .env first}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Generate .env first}
+      TZ: America/Lima
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -u"$$MYSQL_USER" "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        SOURCE_REVISION: ${BACKEND_REVISION:?Run prepare.py first}
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: 'Server=db;Port=3306;Database=etnia;User=etnia;Password=${DB_PASSWORD};'
+      Jwt__Key: ${JWT_KEY:?Generate .env first}
+      Jwt__Issuer: https://${ETNIA_HOST}
+      Jwt__Audience: https://${ETNIA_HOST}
+      Bootstrap__AdminPassword: ${ADMIN_PASSWORD:?Generate .env first}
+      Database__MigrateOnStartup: 'true'
+      Deployment__Label: ${DEPLOYMENT_LABEL:-Produccion}
+      Caja__DatosPrueba: 'false'
+      Storage__ImagePath: images/categorias
+    volumes:
+      - uploaded_images:/app/wwwroot/images
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal]
+  frontend:
+    build:
+      context: ../../karaoke-etnia-frontend
+      dockerfile: deploy/Dockerfile
+      args:
+        SOURCE_REVISION: ${FRONTEND_REVISION:?Run prepare.py first}
+    restart: unless-stopped
+    networks: [internal]
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      ETNIA_HOST: ${ETNIA_HOST:?Configure the public hostname}
+      TLS_EMAIL: ${TLS_EMAIL:?Configure email for HTTPS}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      internal:
+        ipv4_address: 172.30.60.10
+    depends_on: [api, frontend]
+networks:
+  internal:
+    ipam:
+      config:
+        - subnet: 172.30.60.0/24
+volumes:
+  mysql_data:
+  uploaded_images:
+  caddy_data:
+  caddy_config:

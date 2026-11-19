@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeEtniaApi.Infrastructure.Data;
 using System.Linq;
@@ -11,7 +12,8 @@ namespace KaraokeEtniaApi.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class DashboardController : ControllerBase
+[Authorize(Roles = "Administrador,Cajero")]
+    public class DashboardController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IWebHostEnvironment _environment;

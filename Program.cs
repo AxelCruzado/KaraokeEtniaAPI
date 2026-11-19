@@ -9,8 +9,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
 using KaraokeEtniaApi.API.Hubs;
+using KaraokeEtniaApi.Deployment;
 
 var builder = WebApplication.CreateBuilder(args);
+DeploymentSetup.Validate(builder.Configuration, builder.Environment);
 
 // Agregar servicios al contenedor
 builder.Services.AddHttpContextAccessor();
@@ -26,7 +28,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost", policy =>
     {
-        policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+        var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+        policy.SetIsOriginAllowed(origin => origins.Contains(origin, StringComparer.OrdinalIgnoreCase)
+            || (builder.Environment.IsDevelopment() && Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.Host == "localhost"))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -36,7 +40,7 @@ builder.Services.AddCors(options =>
 // Registrar AppDbContext con MySQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+        new MySqlServerVersion(new Version(8, 0, 0))));
 
 builder.Services.AddDbContext<CajaDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -97,6 +101,12 @@ builder.Services.AddSignalR();
 
 // Construir la aplicación
 var app = builder.Build();
+app.UseForwardedHeaders(new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+    // Only the trusted internal proxy can supply the HTTPS scheme. API has no public port.
+    KnownProxies = { System.Net.IPAddress.Parse("172.30.60.10") }
+});
 
 // Configurar el pipeline de middleware
 if (app.Environment.IsDevelopment())
@@ -140,23 +150,17 @@ app.UseEndpoints(endpoints =>
     endpoints.MapHub<PedidoHub>("/pedidoHub");
 });
 
-// Sembrar el usuario administrador inicial si no existe
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<AppDbContext>();
-    if (!context.Usuarios.Any())
-    {
-        context.Usuarios.Add(new Usuario
-        {
-            NombreUsuario = "admin",
-            ContraseñaHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
-            Rol = "Administrador",
-            FechaRegistro = DateTime.Now
-        });
-        context.SaveChanges();
-    }
-}
+await DeploymentSetup.Initialize(app);
+app.MapGet("/api/version", () => Results.Ok(new {
+    servicio = "KaraokeEtniaAPI",
+    revision = System.Reflection.Assembly.GetExecutingAssembly()
+        .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+        .Cast<System.Reflection.AssemblyInformationalVersionAttribute>().Single().InformationalVersion,
+    ambiente = app.Configuration["Deployment:Label"] ?? app.Environment.EnvironmentName
+})).AllowAnonymous();
+app.MapGet("/health/live", () => Results.Ok(new { estado = "activo" })).AllowAnonymous();
+app.MapGet("/health/ready", async (AppDbContext db) =>
+    await db.Database.CanConnectAsync() ? Results.Ok(new { estado = "disponible" }) : Results.StatusCode(503)).AllowAnonymous();
 
 app.Run();
 

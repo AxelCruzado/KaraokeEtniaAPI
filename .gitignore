@@ -139,3 +139,8 @@ secrets.json
 
 # Python integration test bytecode
 __pycache__/
+
+# Deployment private state and backups
+/deploy/.env
+/deploy/backups/
+/deploy/f01/
