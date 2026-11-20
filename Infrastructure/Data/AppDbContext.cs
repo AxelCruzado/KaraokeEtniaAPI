@@ -23,7 +23,9 @@ public class AppDbContext : DbContext
     public DbSet<PedidoDetalleHistorial> PedidoDetallesHistorial { get; set; }
     public DbSet<SolicitudCancion> SolicitudesCanciones { get; set; }
 
-    public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor? actor = null) : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor? actor = null) : this((DbContextOptions)options, actor) { }
+
+    protected AppDbContext(DbContextOptions options, IHttpContextAccessor? actor = null) : base(options)
     {
         this.actor = actor;
     }

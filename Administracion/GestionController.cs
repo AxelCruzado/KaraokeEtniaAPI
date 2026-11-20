@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using KaraokeEtniaApi.Infrastructure.Postgres;
 namespace KaraokeEtniaApi.Administracion;
 public record Ajuste(int ProductoId,int Cantidad,string Motivo,int StockEsperado);
 public record Minimo(int Cantidad);
@@ -34,7 +35,7 @@ public class GestionController(AppDbContext db,CajaDbContext ledger,CajaService 
   // One transaction spans receipt, inventory ledger and the corresponding cash expense.
   await ledger.Database.CloseConnectionAsync();ledger.Database.SetDbConnection(db.Database.GetDbConnection());
   await using var tx=await db.Database.BeginTransactionAsync();await ledger.Database.UseTransactionAsync(tx.GetDbTransaction());
-  var rows=await db.Compras.FromSqlInterpolated($"SELECT * FROM Compras WHERE Id={id} FOR UPDATE").ToListAsync();var c=rows.SingleOrDefault()??throw new CajaError("Compra no encontrada.",404);
+  var rows=await DatabaseRows.Locked<Compra>(db,id).ToListAsync();var c=rows.SingleOrDefault()??throw new CajaError("Compra no encontrada.",404);
   if(c.Version!=i.VersionEsperada)throw new CajaError("La compra cambió desde que la consultó. Actualice y revise sus productos antes de recibirla.",409);
   if(c.Estado!="Pendiente")throw new CajaError("Compra ya recibida; no se duplica stock ni egreso.",409);
   await db.Entry(c).Collection(x=>x.Lineas).LoadAsync();var turno=await ledger.Turnos.SingleOrDefaultAsync(t=>t.Id==i.TurnoId)??throw new CajaError("Turno no encontrado.");
@@ -48,7 +49,7 @@ public class GestionController(AppDbContext db,CajaDbContext ledger,CajaService 
  public async Task<IActionResult> Usuario(int id,EstadoUsuario i){if(string.IsNullOrWhiteSpace(i.Motivo)||!Enum.TryParse<Rol>(i.Rol,out var role)||!Enum.IsDefined(role))throw new CajaError("Rol o motivo inválido.");var u=await db.Usuarios.FindAsync(id)??throw new CajaError("Usuario no encontrado.",404);if(u.NombreUsuario==Who)throw new CajaError("No puede desactivar ni cambiar su propio rol.");Audit("Permisos/estado de usuario",$"{u.NombreUsuario}: {u.Rol}/{u.Activo} → {i.Rol}/{i.Activo}; {i.Motivo}");u.Activo=i.Activo;u.Rol=i.Rol;await db.SaveChangesAsync();return Ok(new{u.Id,u.Activo,u.Rol});}
 
  static void Reason(string motivo){if(string.IsNullOrWhiteSpace(motivo)||motivo.Trim().Length>500)throw new CajaError("Indique un motivo de 1 a 500 caracteres.");}
- async Task<Compra> LockCompra(int id){var rows=await db.Compras.FromSqlInterpolated($"SELECT * FROM Compras WHERE Id={id} FOR UPDATE").ToListAsync();var c=rows.SingleOrDefault()??throw new CajaError("Compra no encontrada.",404);await db.Entry(c).Collection(x=>x.Lineas).LoadAsync();return c;}
+ async Task<Compra> LockCompra(int id){var rows=await DatabaseRows.Locked<Compra>(db,id).ToListAsync();var c=rows.SingleOrDefault()??throw new CajaError("Compra no encontrada.",404);await db.Entry(c).Collection(x=>x.Lineas).LoadAsync();return c;}
  object Snap(Compra c)=>new{c.Id,c.Version,c.ProveedorId,c.Documento,c.Estado,c.MovimientoCajaId,lineas=c.Lineas.Select(l=>new{l.ProductoId,l.Cantidad,l.CostoUnitario}).ToArray()};
  [HttpPost("compras/{id}/corregir"),Authorize(Roles="Administrador")]
  public async Task<IActionResult> CorregirCompra(int id,CambioCompra i){

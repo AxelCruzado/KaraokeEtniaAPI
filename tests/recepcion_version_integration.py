@@ -6,9 +6,8 @@ os.environ.setdefault('CAJA_TEST_CA','/workspace/.setup/localhost.crt')
 from caja_integration import req
 s=uuid.uuid4().hex[:8];root='/api/gestion'
 a=req('/api/autenticacion/login',{'nombreUsuario':os.getenv('CAJA_TEST_ADMIN','admin'),'password':os.getenv('CAJA_TEST_PASSWORD','admin123')})['token']
-cmd=['docker','--host=unix:///var/run/docker.sock','exec','-i','etnia-dev-mysql','mysql','-uroot','-N','etnia_dev']
-sql=f"INSERT INTO Categorias(Nombre,ImagenUrl,Estado) VALUES('VERSION-{s}','','Activo');SET @cat=LAST_INSERT_ID();INSERT INTO Productos(Nombre,ImagenUrl,Stock,Precio,TicketsPorUnidad,CategoriaId,StockMinimo) VALUES('VERSION-A-{s}','',10,5,0,@cat,0);SELECT LAST_INSERT_ID();INSERT INTO Productos(Nombre,ImagenUrl,Stock,Precio,TicketsPorUnidad,CategoriaId,StockMinimo) VALUES('VERSION-B-{s}','',10,5,0,@cat,0);SELECT LAST_INSERT_ID();"
-p1,p2=map(int,subprocess.check_output(cmd,input=sql.encode()).split())
+from fixture_db import products
+p1,p2=products('VERSION-'+s,['VERSION-A-'+s,'VERSION-B-'+s],minimum=0)
 provider=req(root+'/proveedores',{'nombre':'VERSION '+s,'documento':'VERSION-'+s,'contacto':'Prueba'},a)
 def inputs(pid,q,c):return {'proveedorId':provider['id'],'documento':'COMPRA-'+s,'lineas':[{'productoId':pid,'cantidad':q,'costoUnitario':c}]}
 cid=req(root+'/compras',inputs(p1,3,2),a)['id']

@@ -10,8 +10,10 @@ using System.Text;
 using System.Text.Json;
 using KaraokeEtniaApi.API.Hubs;
 using KaraokeEtniaApi.Deployment;
+using KaraokeEtniaApi.Infrastructure.Postgres;
 
 var builder = WebApplication.CreateBuilder(args);
+PostgresConfiguration.Prepare(builder.Configuration);
 DeploymentSetup.Validate(builder.Configuration, builder.Environment);
 
 // Agregar servicios al contenedor
@@ -37,15 +39,21 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Registrar AppDbContext con MySQL
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 0))));
-
-builder.Services.AddDbContext<CajaDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 0)), x => x.MigrationsHistoryTable("__CajaMigrationsHistory")));
+// Separate contexts keep PostgreSQL and MySQL migration histories independent.
+if (builder.Configuration["Database:Provider"]?.Equals("PostgreSQL",StringComparison.OrdinalIgnoreCase)==true)
+{
+    builder.Services.AddDbContext<PostgresAppDbContext>(o=>o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),x=>x.MigrationsHistoryTable("__PostgresAppMigrationsHistory")));
+    builder.Services.AddScoped<AppDbContext>(s=>s.GetRequiredService<PostgresAppDbContext>());
+    builder.Services.AddDbContext<PostgresCajaDbContext>(o=>o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),x=>x.MigrationsHistoryTable("__PostgresCajaMigrationsHistory")));
+    builder.Services.AddScoped<CajaDbContext>(s=>s.GetRequiredService<PostgresCajaDbContext>());
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(o=>o.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),new MySqlServerVersion(new Version(8,0,0))));
+    builder.Services.AddDbContext<CajaDbContext>(o=>o.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),new MySqlServerVersion(new Version(8,0,0)),x=>x.MigrationsHistoryTable("__CajaMigrationsHistory")));
+}
 builder.Services.AddScoped<CajaService>();
+builder.Services.AddScoped<ImageStorage>();
 
 // Configurar Swagger
 builder.Services.AddSwaggerGen(c =>
@@ -138,7 +146,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowLocalhost");
 
 app.UseStaticFiles();
-app.UseHttpsRedirection();
+// Render terminates HTTPS at its edge; direct VM deployments still use the trusted local proxy.
+if (!app.Configuration.GetValue<bool>("Deployment:Render")) app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -151,12 +160,19 @@ app.UseEndpoints(endpoints =>
 });
 
 await DeploymentSetup.Initialize(app);
+if (app.Configuration["Storage:Backend"] == "Database")
+    app.MapGet("/images/{folder}/{file}", async (string folder,string file,AppDbContext db) =>
+    {
+        var image=await db.Set<StoredImage>().AsNoTracking().SingleOrDefaultAsync(x=>x.Id==file && x.Folder==folder);
+        return image==null?Results.NotFound():Results.File(image.Content,image.ContentType);
+    }).AllowAnonymous();
 app.MapGet("/api/version", () => Results.Ok(new {
     servicio = "KaraokeEtniaAPI",
     revision = System.Reflection.Assembly.GetExecutingAssembly()
         .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
         .Cast<System.Reflection.AssemblyInformationalVersionAttribute>().Single().InformationalVersion,
-    ambiente = app.Configuration["Deployment:Label"] ?? app.Environment.EnvironmentName
+    ambiente = app.Configuration["Deployment:Label"] ?? app.Environment.EnvironmentName,
+    baseDeDatos = app.Configuration["Database:Provider"] ?? "MySQL"
 })).AllowAnonymous();
 app.MapGet("/health/live", () => Results.Ok(new { estado = "activo" })).AllowAnonymous();
 app.MapGet("/health/ready", async (AppDbContext db) =>

@@ -242,25 +242,6 @@ public class ProductosController : ControllerBase
         return NoContent();
     }
 
-    private async Task<string> SaveImage(IFormFile image)
-    {
-        try
-        {
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-            var filePath = Path.Combine(_environment.WebRootPath, _uploadPath, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await image.CopyToAsync(stream);
-            }
-
-            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-            return $"{baseUrl}/images/productos/{fileName}"; 
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al guardar la imagen: {ex.Message}");
-            return null;
-        }
-    }
+    private Task<string> SaveImage(IFormFile image) =>
+        HttpContext.RequestServices.GetRequiredService<KaraokeEtniaApi.Infrastructure.Postgres.ImageStorage>().Save(image,"productos");
 }

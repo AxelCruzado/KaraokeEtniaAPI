@@ -9,8 +9,8 @@ a=req('/api/autenticacion/login',{'nombreUsuario':'admin','password':os.getenv('
 pw=secrets.token_urlsafe(20);name='gestion_'+s
 req('/api/autenticacion/registrar',{'nombreUsuario':name,'password':pw,'rol':'Cajero'},a)
 c=req('/api/autenticacion/login',{'nombreUsuario':name,'password':pw})['token']
-sql=f"INSERT INTO Categorias(Nombre,ImagenUrl,Estado) VALUES('TEST-{s}','','Activo'); INSERT INTO Productos(Nombre,ImagenUrl,Stock,Precio,TicketsPorUnidad,CategoriaId,StockMinimo) VALUES('TEST-{s}','',10,5,0,LAST_INSERT_ID(),2); SELECT LAST_INSERT_ID();"
-pid=int(subprocess.check_output(['docker','--host=unix:///var/run/docker.sock','exec','-i','etnia-dev-mysql','mysql','-uroot','-N','etnia_dev'],input=sql.encode()))
+from fixture_db import products
+pid=products('TEST-'+s,['TEST-'+s])[0]
 root='/api/gestion'
 def data():
  d=req(root+'/resumen',token=a);d['movimientos']=req(root+'/inventario/historial?tamano=200',token=a)['items'];d['acciones']=req(root+'/acciones/historial?tamano=200',token=a)['items'];return d

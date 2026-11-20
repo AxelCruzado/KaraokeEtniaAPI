@@ -1,0 +1,36 @@
+# Backend only. Never add credentials or certificate contents to this file.
+services:
+  - type: web
+    name: etnia-api
+    runtime: docker
+    plan: free
+    branch: work
+    dockerfilePath: ./deploy/render.Dockerfile
+    healthCheckPath: /health/ready
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Database__Provider
+        value: PostgreSQL
+      - key: Database__MigrateOnStartup
+        value: 'true'
+      - key: Storage__Backend
+        value: Database
+      - key: Deployment__Render
+        value: 'true'
+      - key: Caja__DatosPrueba
+        value: 'false'
+      - key: Jwt__Issuer
+        value: EtniaAPI
+      - key: Jwt__Audience
+        value: EtniaWeb
+      - key: Jwt__Key
+        generateValue: true
+      - key: Bootstrap__AdminPassword
+        sync: false
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Database__CaCertificatePem
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        sync: false

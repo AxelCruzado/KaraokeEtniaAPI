@@ -88,8 +88,10 @@ public class ReporteCaja
     public string Usuario { get; set; } = "";
     public string SnapshotJson { get; set; } = "";
 }
-public class CajaDbContext(DbContextOptions<CajaDbContext> options) : DbContext(options)
+public class CajaDbContext : DbContext
 {
+    public CajaDbContext(DbContextOptions<CajaDbContext> options) : base(options) { }
+    protected CajaDbContext(DbContextOptions options) : base(options) { }
     public DbSet<TurnoCaja> Turnos => Set<TurnoCaja>();
     public DbSet<VentaCaja> Ventas => Set<VentaCaja>();
     public DbSet<MovimientoCaja> Movimientos => Set<MovimientoCaja>();

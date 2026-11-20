@@ -16,6 +16,7 @@ def clean(value):
  if isinstance(value,bytes):return value.decode('utf-8-sig',errors='replace')
  return value
 original=caja.req;events=[];suite='';counter=0
+(OUT/'fixture_db.py').write_bytes((REPO/'tests/fixture_db.py').read_bytes())
 # req validates actual HTTP status; failures retain their exception and fail the suite.
 def recorded(path,body=None,token=None,status=200):
  global counter
@@ -28,7 +29,7 @@ def recorded(path,body=None,token=None,status=200):
   events.append(event)
   with (OUT/'ejecucion.jsonl').open('a') as f:f.write(json.dumps(event,ensure_ascii=False)+'\n')
 caja.req=recorded
-report={'inicio':now(),'evaluador':'Codex — ejecución automatizada; revisión humana pendiente','ambiente':'Local de pruebas, etnia_dev; operaciones de ensayo, sin atención real','version_backend':git(REPO),'version_frontend':git(REPO.parent/'karaoke-etnia-frontend'),'suites':[]}
+report={'inicio':now(),'evaluador':'Codex — ejecución automatizada; revisión humana pendiente','ambiente':('Local PostgreSQL etnia_pg' if os.getenv('CAJA_TEST_PROVIDER')=='PostgreSQL' else 'Local MySQL etnia_dev')+'; operaciones de ensayo, sin atención real','version_backend':git(REPO),'version_frontend':git(REPO.parent/'karaoke-etnia-frontend'),'suites':[]}
 os.environ['CAJA_TEST_RESULT']=str(OUT/'caja-resultados.json')
 for filename in ['recepcion_version_integration.py','gestion_integration.py','compras_ciclo_integration.py','caja_integration.py']:
  suite=filename;entry={'prueba':suite,'inicio':now(),'pasos':'Consultar script archivado y ejecucion.jsonl','resultado_esperado':'Todas las aserciones del script se cumplen; rechazos sin efectos indebidos','evidencia':[suite+'.log','ejecucion.jsonl']}

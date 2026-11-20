@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using KaraokeEtniaApi.Infrastructure.Postgres;
 
 namespace KaraokeEtniaApi.Administracion;
 public class CajaError(string message, int status = 400) : Exception(message) { public int Status { get; } = status; }
@@ -54,7 +55,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones)
     async Task<T> Locked<T>(string id, Func<TurnoCaja, Task<T>> action)
     {
         await using var tx = db.Database.CurrentTransaction == null ? await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted) : null;
-        var turns = await db.Turnos.FromSqlInterpolated($"SELECT * FROM Caja_TurnoCaja WHERE Id = {id} FOR UPDATE").ToListAsync();
+        var turns = await DatabaseRows.Locked<TurnoCaja>(db,id).ToListAsync();
         var turn = turns.SingleOrDefault() ?? throw new CajaError("Turno no encontrado.", 404);
         var result = await action(turn);
         await db.SaveChangesAsync(); if(tx != null) await tx.CommitAsync(); return result;

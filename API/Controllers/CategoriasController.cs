@@ -202,39 +202,6 @@ public class CategoriasController : ControllerBase
         return NoContent();
     }
 
-    private async Task<string> SaveImage(IFormFile image)
-    {
-        try
-        {
-            var imagePath = Path.Combine(_environment.WebRootPath, "images", "categorias");
-            Console.WriteLine($"Ruta de almacenamiento: {imagePath}");
-            if (!Directory.Exists(imagePath))
-            {
-                Console.WriteLine($"Creando directorio: {imagePath}");
-                Directory.CreateDirectory(imagePath);
-            }
-
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-            var filePath = Path.Combine(imagePath, fileName);
-            Console.WriteLine($"Guardando imagen en: {filePath}");
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await image.CopyToAsync(stream);
-            }
-
-            // Devolvemos una URL dinámica basada en la petición actual
-            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-            var imageUrl = $"{baseUrl}/images/categorias/{fileName}";
-            Console.WriteLine($"Imagen guardada correctamente: {imageUrl}");
-            return imageUrl;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al guardar la imagen: {ex.Message}");
-            Console.WriteLine($"StackTrace: {ex.StackTrace}");
-            return null;
-        }
-    }
-
+    private Task<string> SaveImage(IFormFile image) =>
+        HttpContext.RequestServices.GetRequiredService<KaraokeEtniaApi.Infrastructure.Postgres.ImageStorage>().Save(image,"categorias");
 }

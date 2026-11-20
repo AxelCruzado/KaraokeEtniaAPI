@@ -7,8 +7,8 @@ from caja_integration import req
 nonce=uuid.uuid4().hex[:8];a=req('/api/autenticacion/login',{'nombreUsuario':'admin','password':os.getenv('CAJA_TEST_PASSWORD','admin123')})['token'];root='/api/gestion'
 pw=secrets.token_urlsafe(24);req('/api/autenticacion/registrar',{'nombreUsuario':'ciclo_'+nonce,'password':pw,'rol':'Cajero'},a)
 cash=req('/api/autenticacion/login',{'nombreUsuario':'ciclo_'+nonce,'password':pw})['token']
-cmd=['docker','--host=unix:///var/run/docker.sock','exec','-i','etnia-dev-mysql','mysql','-uroot','-N','etnia_dev']
-pid=int(subprocess.check_output(cmd,input=f"INSERT INTO Categorias(Nombre,ImagenUrl,Estado) VALUES('CICLO-{nonce}','','Activo');INSERT INTO Productos(Nombre,ImagenUrl,Stock,Precio,TicketsPorUnidad,CategoriaId,StockMinimo) VALUES('CICLO-{nonce}','',10,5,0,LAST_INSERT_ID(),2);SELECT LAST_INSERT_ID();".encode()))
+from fixture_db import products
+pid=products('CICLO-'+nonce,['CICLO-'+nonce])[0]
 provider=req(root+'/proveedores',{'nombre':'CICLO '+nonce,'documento':'CICLO-'+nonce,'contacto':'Prueba'},a)
 def state():return req(root+'/resumen',token=a)
 def product():return next(x for x in state()['productos'] if x['id']==pid)

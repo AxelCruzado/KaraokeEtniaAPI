@@ -2,12 +2,24 @@ using KaraokeEtniaApi.Administracion;
 using KaraokeEtniaApi.Domain.Entities;
 using KaraokeEtniaApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 namespace KaraokeEtniaApi.Deployment;
 
 public static class DeploymentSetup
 {
     public static void Validate(IConfiguration config, IHostEnvironment env)
     {
+        var provider=config["Database:Provider"] ?? "MySQL";
+        if (!new[]{"MySQL","PostgreSQL"}.Contains(provider,StringComparer.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Database__Provider debe ser MySQL o PostgreSQL.");
+        if(config["Storage:Backend"]=="Database" && !provider.Equals("PostgreSQL",StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("El almacenamiento de imágenes en base requiere PostgreSQL.");
+        if (provider.Equals("PostgreSQL",StringComparison.OrdinalIgnoreCase) && !env.IsDevelopment())
+        {
+            var connection=new NpgsqlConnectionStringBuilder(config.GetConnectionString("DefaultConnection"));
+            if(connection.SslMode!=SslMode.VerifyFull)
+                throw new InvalidOperationException("La conexión PostgreSQL pública debe usar SSL Mode=VerifyFull y una CA de confianza.");
+        }
         if (string.IsNullOrWhiteSpace(config.GetConnectionString("DefaultConnection")))
             throw new InvalidOperationException("Configure ConnectionStrings__DefaultConnection.");
         if (!env.IsDevelopment() && (config["Jwt:Key"]?.Length < 32 || string.IsNullOrWhiteSpace(config["Jwt:Key"])))
