@@ -46,7 +46,7 @@ public class CartaService(AppDbContext db) {
  async Task<(Dictionary<int,Producto> products,Dictionary<int,CartaProducto> cards)> Data(){return ((await db.Productos.Include(p=>p.Categoria).ToListAsync()).ToDictionary(x=>x.Id),(await db.CartaProductos.ToListAsync()).ToDictionary(x=>x.ProductoId));}
  public async Task<object> Catalogo(bool inventario,int? categoriaId){
   var (products,cards)=await Data();var ice=cards.Values.SingleOrDefault(x=>x.Tipo=="Hielo");
-  return products.Values.Where(p=>inventario?(!cards.TryGetValue(p.Id,out var c)||c.Tipo is not ("Preparado" or "Paquete")):(p.Categoria.Estado==EstadoCategoria.Activo&&(!cards.TryGetValue(p.Id,out var cc)||cc.Vendible))).Where(p=>categoriaId==null||p.CategoriaId==categoriaId).Select(p=>{
+  return products.Values.Where(p=>p.Categoria.Estado==EstadoCategoria.Activo).Where(p=>inventario?(!cards.TryGetValue(p.Id,out var c)||c.Tipo is not ("Preparado" or "Paquete")):(p.Categoria.Estado==EstadoCategoria.Activo&&(!cards.TryGetValue(p.Id,out var cc)||cc.Vendible))).Where(p=>categoriaId==null||p.CategoriaId==categoriaId).Select(p=>{
    cards.TryGetValue(p.Id,out var c);var rule=c==null?new ReglaCarta():Rule(c);var disponible=p.Stock;
    if(c?.Tipo is "Preparado" or "Paquete"){
     disponible=int.MaxValue;
