@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace KaraokeEtniaApi.Administracion;
 [ApiController,Route("api/carta"),Authorize(Roles="Administrador,Cajero,Mesera"),TypeFilter(typeof(CajaExceptionFilter))]
 public class CartaController(CartaService service,AppDbContext db,IHubContext<PedidoHub> hub):ControllerBase {
- [HttpGet("version")]public object Version()=>new{version=1,componentes=true,recetasMl=true,hielo=true};
+ [HttpGet("version")]public object Version()=>new{version=2,componentes=true,recetasMl=true,hielo=true,cobroAutomatico=true};
+ [HttpGet("turno")]public async Task<object> Turno([FromServices] CajaAutomatica horario)=>await horario.Estado();
  [HttpGet("catalogo")]public async Task<object> Catalogo(int? categoriaId=null)=>await service.Catalogo(false,categoriaId);
  [HttpGet("inventario"),Authorize(Roles="Administrador,Cajero")]public async Task<object> Inventario()=>await service.Catalogo(true,null);
  [HttpPost("configurar"),Authorize(Roles="Administrador")]public async Task<object> Configurar(ConfigurarCarta input)=>await service.Configurar(input,User.Identity!.Name!);

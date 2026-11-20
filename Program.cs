@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.SignalR;
 using KaraokeEtniaApi.Administracion;
 using KaraokeEtniaApi.Domain.Entities;
 using KaraokeEtniaApi.Domain.Interfaces;
@@ -53,6 +54,8 @@ else
     builder.Services.AddDbContext<CajaDbContext>(o=>o.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),new MySqlServerVersion(new Version(8,0,0)),x=>x.MigrationsHistoryTable("__CajaMigrationsHistory")));
 }
 builder.Services.AddScoped<CajaService>();
+builder.Services.AddScoped<CajaAutomatica>();
+builder.Services.AddHostedService<RelojCajaWorker>();
 builder.Services.AddScoped<CartaService>();
 builder.Services.AddScoped<ImageStorage>();
 
@@ -153,6 +156,13 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.Use(async (context,next) => {
+    if(context.Request.Path.StartsWithSegments("/api/caja") || context.Request.Path.StartsWithSegments("/api/carta") || context.Request.Path.StartsWithSegments("/api/mesas"))
+        await context.RequestServices.GetRequiredService<CajaAutomatica>().Sincronizar();
+    await next();
+    if(context.Request.Method=="POST" && context.Request.Path.StartsWithSegments("/api/caja") && context.Response.StatusCode<300)
+        await context.RequestServices.GetRequiredService<Microsoft.AspNetCore.SignalR.IHubContext<PedidoHub>>().Clients.All.SendAsync("CajaActualizada","administración");
+});
 // Mapear controladores y hubs de SignalR
 app.UseEndpoints(endpoints =>
 {

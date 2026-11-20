@@ -15,12 +15,28 @@ public class TurnoCaja
     public decimal FondoInicial { get; set; }
     public string Responsable { get; set; } = "";
     public string Estado { get; set; } = "Abierto";
+    public bool Automatico { get; set; }
+    public DateTime? FondoDeclaradoUtc {get;set;}
+    public string FondoDeclaradoPor {get;set;} = "";
+    public int VersionFondo {get;set;}
+    public DateTime? AtencionExtraHasta {get;set;}
+    public DateTime? AtencionExtraAutorizadaUtc {get;set;}
+    public string AtencionExtraPor {get;set;} = "";
+    public string MotivoAtencionExtra {get;set;} = "";
+    public int VersionExcepcion {get;set;}
+    public DateTime? FinalizadoAutomaticamenteUtc { get; set; }
+}
+public class CalendarioCaja
+{
+    public int Id {get;set;} = 1;
+    public DateTime? ProximaFecha {get;set;}
 }
 public class VentaCaja
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Referencia { get; set; } = "";
     public int? PedidoHistorialId { get; set; }
+    public int? PedidoOrigenId { get; set; }
     public decimal Total { get; set; }
     public string Estado { get; set; } = "Pendiente";
 }
@@ -61,6 +77,11 @@ public class CierreCaja
     public DateTime RegistradoUtc { get; set; } = DateTime.UtcNow;
     public string Responsable { get; set; } = "";
     public decimal Contado { get; set; }
+    public decimal? YapeVerificado {get;set;}
+    public decimal? PlinVerificado {get;set;}
+    public decimal? TarjetaVerificado {get;set;}
+    public string EstadoConformidad {get;set;} = "";
+    public string Observaciones {get;set;} = "";
     public decimal Esperado { get; set; }
     public decimal Diferencia { get; set; }
     public string SnapshotJson { get; set; } = "";
@@ -92,6 +113,7 @@ public class CajaDbContext : DbContext
 {
     public CajaDbContext(DbContextOptions<CajaDbContext> options) : base(options) { }
     protected CajaDbContext(DbContextOptions options) : base(options) { }
+    public DbSet<CalendarioCaja> Calendarios => Set<CalendarioCaja>();
     public DbSet<TurnoCaja> Turnos => Set<TurnoCaja>();
     public DbSet<VentaCaja> Ventas => Set<VentaCaja>();
     public DbSet<MovimientoCaja> Movimientos => Set<MovimientoCaja>();
@@ -101,15 +123,18 @@ public class CajaDbContext : DbContext
     public DbSet<ReporteCaja> Reportes => Set<ReporteCaja>();
     protected override void OnModelCreating(ModelBuilder b)
     {
-        foreach (var type in new[] { typeof(TurnoCaja), typeof(VentaCaja), typeof(MovimientoCaja), typeof(PagoCaja), typeof(CierreCaja), typeof(AuditoriaCaja), typeof(ReporteCaja) })
+        foreach (var type in new[] { typeof(CalendarioCaja), typeof(TurnoCaja), typeof(VentaCaja), typeof(MovimientoCaja), typeof(PagoCaja), typeof(CierreCaja), typeof(AuditoriaCaja), typeof(ReporteCaja) })
         {
             b.Entity(type).ToTable("Caja_" + type.Name);
             foreach (var prop in type.GetProperties())
             {
                 if (prop.PropertyType == typeof(string)) b.Entity(type).Property(prop.Name).HasMaxLength(prop.Name.EndsWith("Json") ? 16000 : (prop.Name == "Id" || prop.Name.EndsWith("Id")) ? 32 : prop.Name == "ClaveOperacion" ? 100 : prop.Name == "Codigo" ? 32 : 500);
-                if (prop.PropertyType == typeof(decimal)) b.Entity(type).Property(prop.Name).HasPrecision(14, 2);
+                if (prop.PropertyType == typeof(decimal) || prop.PropertyType == typeof(decimal?)) b.Entity(type).Property(prop.Name).HasPrecision(14, 2);
             }
         }
+        b.Entity<CierreCaja>().Property(x=>x.Observaciones).HasMaxLength(2000);
+        b.Entity<CalendarioCaja>().HasData(new CalendarioCaja {Id=1});
+        b.Entity<VentaCaja>().HasIndex(x => x.PedidoOrigenId).IsUnique();
         b.Entity<TurnoCaja>().HasIndex(x => x.Codigo).IsUnique();
         b.Entity<TurnoCaja>().HasIndex(x => new { x.Caja, x.Inicio }).IsUnique();
         b.Entity<TurnoCaja>().Property(x => x.CajaActiva).HasMaxLength(40);

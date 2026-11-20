@@ -18,7 +18,7 @@ public class CajaExceptionFilter(ILogger<CajaExceptionFilter> logger) : IExcepti
     }
 }
 [ApiController, Route("api/caja"), Authorize(Roles = "Administrador,Cajero"), TypeFilter(typeof(CajaExceptionFilter))]
-public class CajaController(CajaDbContext db, CajaService service, IWebHostEnvironment env, IConfiguration config) : ControllerBase
+public class CajaController(CajaDbContext db, CajaService service, IWebHostEnvironment env, IConfiguration config, CajaAutomatica horario) : ControllerBase
 {
     string Who => User.Identity?.Name ?? throw new CajaError("Usuario no identificado.", 401);
     IActionResult Denied(string operation) => StatusCode(403, new { message = "No tiene permisos para " + operation + ". La operación fue rechazada y los datos permanecen sin cambios." });
@@ -34,7 +34,7 @@ public class CajaController(CajaDbContext db, CajaService service, IWebHostEnvir
         return Ok(await q.OrderByDescending(t => t.AperturaRegistradaUtc).Take(200).ToListAsync());
     }
     [HttpPost("turnos")]
-    public async Task<IActionResult> Abrir(AperturaInput i) => Ok(await service.Apertura(i, Who));
+    public async Task<IActionResult> Abrir(AperturaInput i) => horario.Enabled ? StatusCode(409,new{message="La apertura es automática a las 19:00. Declara el fondo en el turno existente."}) : Ok(await service.Apertura(i, Who));
     [HttpGet("turnos/{id}")]
     public async Task<IActionResult> Detalle(string id) => Ok(await service.Detail(id));
     [HttpGet("movimientos")]
@@ -60,17 +60,23 @@ public class CajaController(CajaDbContext db, CajaService service, IWebHostEnvir
         return Ok(await operaciones.PedidosHistorial.AsNoTracking().Where(p => p.Total > 0 && !vinculados.Contains(p.Id)).OrderByDescending(p => p.CerradoEn).Take(200).Select(p => new { p.Id, p.MesaId, p.Total, p.CerradoEn, p.MetodoPago }).ToListAsync());
     }
     [HttpPost("ventas")]
-    public async Task<IActionResult> Venta(VentaInput i) => Ok(await service.Venta(i));
+    public async Task<IActionResult> Venta(VentaInput i) => horario.Enabled ? StatusCode(409,new{message="Las ventas se registran al confirmar el pedido; no se duplican manualmente."}) : Ok(await service.Venta(i));
     [HttpPost("turnos/{id}/movimientos")]
-    public async Task<IActionResult> Movimiento(string id, MovimientoInput i) => Ok(await service.Registrar(id, i, Who));
+    public async Task<IActionResult> Movimiento(string id, MovimientoInput i) => horario.Enabled && (i.Tipo!="Egreso" || i.Automatico || i.PedidoOrigenId!=null) ? StatusCode(409,new{message="Los cobros se generan desde los pedidos. Aquí solo se registran egresos."}) : !User.IsInRole("Administrador") ? Denied("registrar egresos") : Ok(await service.Registrar(id, i, Who));
     [HttpPost("turnos/{id}/movimientos/{movimientoId}/corregir")]
-    public async Task<IActionResult> Corregir(string id, string movimientoId, CorreccionInput i) => !User.IsInRole("Administrador") ? Denied("corregir movimientos") : Ok(await service.Corregir(id, movimientoId, i, Who));
+    public async Task<IActionResult> Corregir(string id, string movimientoId, CorreccionInput i) => !User.IsInRole("Administrador") ? Denied("corregir movimientos") : horario.Enabled && await db.Movimientos.AnyAsync(m=>m.Id==movimientoId && m.Tipo=="Ingreso") ? StatusCode(409,new{message="El ingreso está vinculado a un pedido; no se modifica aisladamente."}) : Ok(await service.Corregir(id, movimientoId, i, Who));
     [HttpPost("turnos/{id}/movimientos/{movimientoId}/anulacion")]
-    public async Task<IActionResult> Anular(string id, string movimientoId, AnulacionInput i) => !User.IsInRole("Administrador") ? Denied("anular o revertir movimientos") : Ok(await service.Anular(id, movimientoId, i, Who));
+    public async Task<IActionResult> Anular(string id, string movimientoId, AnulacionInput i) => !User.IsInRole("Administrador") ? Denied("anular o revertir movimientos") : horario.Enabled && await db.Movimientos.AnyAsync(m=>m.Id==movimientoId && m.Tipo=="Ingreso") ? StatusCode(409,new{message="El ingreso está vinculado a un pedido; no se anula aisladamente."}) : Ok(await service.Anular(id, movimientoId, i, Who));
     [HttpPost("turnos/{id}/cierres")]
-    public async Task<IActionResult> Cerrar(string id, CierreInput i) => Ok(await service.Cerrar(id, i, Who));
+    public async Task<IActionResult> Cerrar(string id, CierreInput i) => !User.IsInRole("Administrador") ? Denied("registrar el arqueo") : Ok(await service.Cerrar(id, i, Who));
+    [HttpPost("turnos/{id}/fondo"),Authorize(Roles="Administrador")]
+    public async Task<IActionResult> Fondo(string id,FondoInput i)=>Ok(await service.DeclararFondo(id,i,Who));
+    [HttpPost("turnos/{id}/atencion-extra"),Authorize(Roles="Administrador")]
+    public async Task<IActionResult> Extra(string id,ExcepcionHorarioInput i)=>Ok(await service.AutorizarExtra(id,i,Who));
+    [HttpGet("horario")]
+    public async Task<object> Horario()=>await horario.Estado();
     [HttpPost("turnos/{id}/reabrir")]
-    public async Task<IActionResult> Reabrir(string id, MotivoInput i) => !User.IsInRole("Administrador") ? Denied("reabrir este cierre") : Ok(await service.Reabrir(id, i, Who));
+    public async Task<IActionResult> Reabrir(string id, MotivoInput i) => horario.Enabled ? StatusCode(409,new{message="El turno conserva su cierre. Autoriza atención fuera de horario o registra el arqueo pendiente."}) : !User.IsInRole("Administrador") ? Denied("reabrir este cierre") : Ok(await service.Reabrir(id, i, Who));
     [HttpPost("turnos/{id}/reportes")]
     public async Task<IActionResult> Reportar(string id) => Ok(await service.Reportar(id, Who));
     [HttpGet("reportes/{id}")]

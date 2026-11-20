@@ -21,7 +21,7 @@ public static class PostgresModel
         {
             if (property.GetColumnType() == "longtext") property.SetColumnType("text");
             if (property.GetColumnType() == "INT") property.SetColumnType("integer");
-            if (property.ClrType == typeof(DateTime))
+            if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
             {
                 // Business times keep the existing Lima wall-clock contract; *Utc fields retain UTC JSON semantics.
                 property.SetColumnType("timestamp without time zone");

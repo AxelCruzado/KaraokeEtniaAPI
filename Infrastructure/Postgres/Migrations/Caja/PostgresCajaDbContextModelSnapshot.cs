@@ -75,6 +75,28 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
                     b.ToTable("Caja_AuditoriaCaja", (string)null);
                 });
 
+            modelBuilder.Entity("KaraokeEtniaApi.Administracion.CalendarioCaja", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ProximaFecha")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Caja_CalendarioCaja", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1
+                        });
+                });
+
             modelBuilder.Entity("KaraokeEtniaApi.Administracion.CierreCaja", b =>
                 {
                     b.Property<string>("Id")
@@ -103,6 +125,20 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
                         .HasPrecision(14, 2)
                         .HasColumnType("numeric(14,2)");
 
+                    b.Property<string>("EstadoConformidad")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Observaciones")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<decimal?>("PlinVerificado")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)");
+
                     b.Property<DateTime>("RegistradoUtc")
                         .HasColumnType("timestamp without time zone");
 
@@ -116,6 +152,10 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
                         .HasMaxLength(16000)
                         .HasColumnType("text");
 
+                    b.Property<decimal?>("TarjetaVerificado")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)");
+
                     b.Property<string>("TurnoId")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -123,6 +163,10 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
 
                     b.Property<int>("Version")
                         .HasColumnType("integer");
+
+                    b.Property<decimal?>("YapeVerificado")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)");
 
                     b.HasKey("Id");
 
@@ -303,6 +347,20 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
                     b.Property<DateTime>("AperturaRegistradaUtc")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<DateTime?>("AtencionExtraAutorizadaUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("AtencionExtraHasta")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("AtencionExtraPor")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("Automatico")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Caja")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -325,6 +383,17 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
                     b.Property<DateTime>("Fin")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<DateTime?>("FinalizadoAutomaticamenteUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("FondoDeclaradoPor")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("FondoDeclaradoUtc")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<decimal>("FondoInicial")
                         .HasPrecision(14, 2)
                         .HasColumnType("numeric(14,2)");
@@ -332,10 +401,21 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
                     b.Property<DateTime>("Inicio")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("MotivoAtencionExtra")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("Responsable")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<int>("VersionExcepcion")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VersionFondo")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -365,6 +445,9 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
                     b.Property<int?>("PedidoHistorialId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("PedidoOrigenId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Referencia")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -377,6 +460,9 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.Caja
                     b.HasKey("Id");
 
                     b.HasIndex("PedidoHistorialId")
+                        .IsUnique();
+
+                    b.HasIndex("PedidoOrigenId")
                         .IsUnique();
 
                     b.HasIndex("Referencia")

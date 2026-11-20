@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,7 +10,7 @@ using KaraokeEtniaApi.Infrastructure.Postgres;
 using Microsoft.EntityFrameworkCore;
 namespace KaraokeEtniaApi.Administracion;
 
-public class CartaService(AppDbContext db) {
+public class CartaService(AppDbContext db, CajaDbContext ledger, CajaService caja, CajaAutomatica horario) {
  public static readonly JsonSerializerOptions Json=new(JsonSerializerDefaults.Web);
  static string Dump(object value)=>JsonSerializer.Serialize(value,Json);
  static string Fingerprint(object input,string who)=>Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(who+Dump(input))));
@@ -88,18 +89,27 @@ public class CartaService(AppDbContext db) {
   var key=Key(input.ClaveOperacion);var hash=Fingerprint(new{mesaId,input.Detalles,input.MetodoPago,input.PagoCliente},who);
   var previous=await db.CartaRegistros.SingleOrDefaultAsync(x=>x.Clave==key);
   if(previous!=null){if(previous.Hash!=hash||previous.Tipo!="Pedido")throw new CajaError("La clave ya se usó con otros datos.",409);return JsonSerializer.Deserialize<JsonElement>(previous.Json);}
+  await horario.Sincronizar();
+  if(horario.Enabled){await ledger.Database.CloseConnectionAsync();ledger.Database.SetDbConnection(db.Database.GetDbConnection());}
   await using var tx=await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+  TurnoCaja? turno=null;
+  if(horario.Enabled){await ledger.Database.UseTransactionAsync(tx.GetDbTransaction());turno=await horario.ExigirTurno();}
   var mesa=(await DatabaseRows.Locked<Mesa>(db,mesaId).ToListAsync()).SingleOrDefault()??throw new CajaError("Mesa no encontrada.",404);
   if(mesa.Estado==EstadoMesa.Inactivo)throw new CajaError("La mesa está inactiva.");
   var (products,cards)=await Data();var plan=await Plan(mesaId,input,products,cards);
   if(!plan.Disponible)throw new CajaError("Existencias insuficientes: "+string.Join("; ",plan.Faltantes),409);
   if(input.PagoCliente<0||decimal.Round(input.PagoCliente,2)!=input.PagoCliente||input.PagoCliente<Math.Max(0,plan.Total-mesa.Saldo))throw new CajaError("El pago y saldo no cubren el pedido.");
-  var order=new PedidoActivo{MesaId=mesaId,Total=plan.Total,MetodoPago=input.MetodoPago,PagoCliente=input.PagoCliente};
+  var cobrar=Math.Max(0,plan.Total-mesa.Saldo);
+  if(horario.Enabled && cobrar>0 && !new[]{"Efectivo","Yape","Plin","Tarjeta"}.Contains(input.MetodoPago))throw new CajaError("Selecciona efectivo, Yape, Plin o tarjeta para registrar el cobro.");
+  if(horario.Enabled && input.MetodoPago!="Efectivo" && input.PagoCliente!=cobrar)throw new CajaError("El pago digital debe coincidir con el importe por cobrar.");
+  var order=new PedidoActivo{MesaId=mesaId,Total=plan.Total,RegistradoEn=horario.Ahora,MetodoPago=input.MetodoPago,PagoCliente=horario.Enabled?cobrar:input.PagoCliente};
   foreach(var line in plan.Lineas)order.Detalles.Add(new(){ProductoId=line.ProductoId,Cantidad=line.Cantidad,Total=line.Total,Descripcion=line.Descripcion});
   foreach(var (id,qty) in plan.Consumos)products[id].Stock-=qty;
-  mesa.Saldo=mesa.Saldo+input.PagoCliente-plan.Total;mesa.TicketsDisponibles=checked(mesa.TicketsDisponibles+plan.Tickets);mesa.Estado=EstadoMesa.Ocupado;
+  mesa.Saldo=horario.Enabled?Math.Max(0,mesa.Saldo-plan.Total):mesa.Saldo+input.PagoCliente-plan.Total;mesa.TicketsDisponibles=checked(mesa.TicketsDisponibles+plan.Tickets);mesa.Estado=EstadoMesa.Ocupado;
   db.MotivoStock="Consumo de pedido de carta en mesa "+mesa.Numero;db.PedidosActivos.Add(order);await db.SaveChangesAsync();
-  var result=new{message="Pedido registrado.",pedidoId=order.Id,plan.Total,plan.Tickets,plan.Lineas,consumos=plan.Consumos.Select(x=>new{productoId=x.Key,cantidad=x.Value,unidad=cards.GetValueOrDefault(x.Key)?.Unidad??"Unidad"})};
+  MovimientoCaja? cobro=null;
+  if(turno!=null && cobrar>0) cobro=await caja.Registrar(turno.Id,new MovimientoInput("pedido-"+order.Id,"Ingreso","Venta cobrada","Pedido "+order.Id+" · Mesa "+mesa.Numero,"Ventas","PED-"+order.Id,cobrar,horario.Ahora,[new PagoInput(input.MetodoPago!,cobrar)],"PED-"+order.Id,PedidoOrigenId:order.Id,Automatico:true),who);
+  var result=new{message="Pedido registrado.",turnoId=turno?.Id,cobroId=cobro?.Id,cobrado=horario.Enabled?cobrar:input.PagoCliente,vuelto=horario.Enabled?input.PagoCliente-cobrar:0,fueraDeHorario=turno!=null && horario.Ahora>=turno.Fin,pedidoId=order.Id,plan.Total,plan.Tickets,plan.Lineas,consumos=plan.Consumos.Select(x=>new{productoId=x.Key,cantidad=x.Value,unidad=cards.GetValueOrDefault(x.Key)?.Unidad??"Unidad"})};
   db.CartaRegistros.Add(new(){Clave=key,Hash=hash,Tipo="Pedido",MesaId=mesaId,PedidoId=order.Id,Usuario=who,Json=Dump(result)});
   await db.SaveChangesAsync();await tx.CommitAsync();return result;
  }

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.AspNetCore.Authorization;
 // API/Controllers/MesasController.cs
 using KaraokeEtniaApi.Infrastructure.Data;
@@ -248,6 +249,7 @@ public class MesasController : ControllerBase
             var result=await HttpContext.RequestServices.GetRequiredService<KaraokeEtniaApi.Administracion.CartaService>().Registrar(id,pedidoRequest,User.Identity!.Name!);
             var mensajeAdmin = $"Nuevo pedido registrado en mesa {id}.";
             await _hubContext.Clients.All.SendAsync("MesaActualizada",id,"Pedido registrado");
+            await _hubContext.Clients.All.SendAsync("CajaActualizada","pedido");
             await _hubContext.Clients.Group("Administradores").SendAsync("RecibirNotificacion",id,mensajeAdmin);
             return Ok(result);
         }
@@ -281,6 +283,7 @@ public class MesasController : ControllerBase
                 return BadRequest(new { Message = "La mesa no tiene pedidos activos para mover al historial." });
 
             // Mover pedidos activos al historial
+            var archivoParejas=new List<(int Origen,PedidoHistorial Historial)>();
             foreach (var pedidoActivo in mesa.PedidosActivos)
             {
                 var pedidoHistorial = new PedidoHistorial
@@ -288,7 +291,7 @@ public class MesasController : ControllerBase
                     MesaId = pedidoActivo.MesaId,
                     Total = pedidoActivo.Total,
                     RegistradoEn = pedidoActivo.RegistradoEn,
-                    CerradoEn = DateTime.Now,
+                    CerradoEn = HttpContext.RequestServices.GetRequiredService<KaraokeEtniaApi.Administracion.CajaAutomatica>().Ahora,
                     MetodoPago = pedidoActivo.MetodoPago,
                     PagoCliente = pedidoActivo.PagoCliente,
                     Detalles = pedidoActivo.Detalles.Select(d => new PedidoDetalleHistorial
@@ -300,10 +303,20 @@ public class MesasController : ControllerBase
                     }).ToList()
                 };
                 _context.PedidosHistorial.Add(pedidoHistorial);
+                archivoParejas.Add((pedidoActivo.Id,pedidoHistorial));
             }
 
             _context.PedidosActivos.RemoveRange(mesa.PedidosActivos);
 
+            await _context.SaveChangesAsync();
+            var ledger=HttpContext.RequestServices.GetRequiredService<KaraokeEtniaApi.Administracion.CajaDbContext>();
+            await ledger.Database.CloseConnectionAsync();ledger.Database.SetDbConnection(_context.Database.GetDbConnection());
+            await ledger.Database.UseTransactionAsync(tx.GetDbTransaction());
+            foreach(var pareja in archivoParejas){
+                var venta=await ledger.Ventas.SingleOrDefaultAsync(v=>v.PedidoOrigenId==pareja.Origen);
+                if(venta!=null)venta.PedidoHistorialId=pareja.Historial.Id;
+            }
+            await ledger.SaveChangesAsync();
             // Actualizar las canciones de la mesa a "Completada"
             var cancionesMesa = await _context.SolicitudesCanciones
                 .Where(sc => sc.MesaId == id && (sc.Estado == EstadoSolicitud.Pendiente || sc.Estado == EstadoSolicitud.EnReproduccion))
