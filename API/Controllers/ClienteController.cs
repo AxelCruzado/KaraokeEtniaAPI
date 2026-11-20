@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeEtniaApi.Domain.Entities;
 using KaraokeEtniaApi.Infrastructure.Data;
@@ -47,12 +47,28 @@ namespace KaraokeEtniaApi.API.Controllers
 
             var estadoMesa = new
             {
+                MesaNumero = mesa.Numero,
                 Saldo = mesa.Saldo,
                 PedidosActivos = pedidosActivos,
                 TicketsDisponibles = mesa.TicketsDisponibles
             };
 
             return Ok(estadoMesa);
+        }
+
+        [HttpGet("mesa/{id}/canciones")]
+        public async Task<ActionResult> GetCancionesMesa(int id)
+        {
+            if (!await _context.Mesas.AnyAsync(m => m.Id == id))
+                return NotFound(new { Message = "Mesa no encontrada." });
+
+            var canciones = await _context.SolicitudesCanciones
+                .AsNoTracking()
+                .Where(c => c.MesaId == id && (c.Estado == EstadoSolicitud.Pendiente || c.Estado == EstadoSolicitud.EnReproduccion))
+                .OrderBy(c => c.Id)
+                .Select(c => new { c.Id, c.Titulo, c.Artista, c.Tipo, c.Estado })
+                .ToListAsync();
+            return Ok(canciones);
         }
 
         [HttpPost("mesa/{id}/solicitar-cancion")]

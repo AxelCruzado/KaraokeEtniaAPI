@@ -27,12 +27,14 @@ namespace KaraokeEtniaApi.API.Controllers
         {
             var canciones = await _context.SolicitudesCanciones
                 .Where(sc => sc.Estado == EstadoSolicitud.Pendiente || sc.Estado == EstadoSolicitud.EnReproduccion)
+                .OrderBy(sc => sc.Id)
                 .Select(sc => new
                 {
                     sc.Id,
                     sc.Titulo,
                     sc.Artista,
                     sc.MesaId,
+                    MesaNumero = sc.Mesa.Numero,
                     sc.Tipo,
                     sc.Estado
                 })
@@ -52,6 +54,7 @@ namespace KaraokeEtniaApi.API.Controllers
                     sc.Titulo,
                     sc.Artista,
                     sc.MesaId,
+                    MesaNumero = sc.Mesa.Numero,
                     sc.Tipo,
                     sc.Estado
                 })
@@ -73,25 +76,25 @@ namespace KaraokeEtniaApi.API.Controllers
             if (!int.TryParse(estado, out int parsedEstado) || !Enum.IsDefined(typeof(EstadoSolicitud), parsedEstado))
                 return BadRequest(new { Message = "Estado inválido." });
 
-            // Si el nuevo estado es 1 (EnReproduccion), marcamos todas las canciones en 1 (EnReproduccion) como 2 (Completada)
+            // Publish after persistence so connected screens read the committed state.
+            var anteriores = new List<SolicitudCancion>();
             if (parsedEstado == (int)EstadoSolicitud.EnReproduccion)
             {
-                var cancionesEnReproduccion = await _context.SolicitudesCanciones
-                    .Where(sc => sc.Estado == EstadoSolicitud.EnReproduccion)
+                anteriores = await _context.SolicitudesCanciones
+                    .Where(sc => sc.Estado == EstadoSolicitud.EnReproduccion && sc.Id != id)
                     .ToListAsync();
-
-                foreach (var cancion in cancionesEnReproduccion)
-                {
+                foreach (var cancion in anteriores)
                     cancion.Estado = EstadoSolicitud.Completada;
-                    // Enviar notificación a la mesa afectada por la canción completada
-                    await _hubContext.Clients.Group($"Mesa_{cancion.MesaId}").SendAsync("SolicitudActualizada", $"Solicitud {cancion.Id} completada");
-                    await _hubContext.Clients.Group("Musica").SendAsync("EstadoCancionActualizado", cancion.Id, ((int)cancion.Estado).ToString());
-                    Console.WriteLine($"Notificando completada para canción {cancion.Id}, Mesa {cancion.MesaId}");
-                }
             }
 
             solicitud.Estado = (EstadoSolicitud)parsedEstado;
             await _context.SaveChangesAsync();
+
+            foreach (var cancion in anteriores)
+            {
+                await _hubContext.Clients.Group($"Mesa_{cancion.MesaId}").SendAsync("SolicitudActualizada", $"Solicitud {cancion.Id} completada");
+                await _hubContext.Clients.Group("Musica").SendAsync("EstadoCancionActualizado", cancion.Id, ((int)cancion.Estado).ToString());
+            }
 
             // Notificar al grupo "Musica" sobre el cambio de estado
             await _hubContext.Clients.Group("Musica").SendAsync("EstadoCancionActualizado", id, parsedEstado.ToString());
