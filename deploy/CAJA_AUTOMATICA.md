@@ -12,7 +12,7 @@ El fin del horario conserva el turno como Cerrado. No inventa dinero contado. Si
 
 ## Fondo declarado después de abrir
 
-Administrador: Ventas y caja → Fondo inicial. Puede declarar el monto durante el horario ordinario, con motivo. Se guardan monto anterior, monto nuevo, usuario, fecha/hora UTC mostrada en Lima, versión y demora desde las 19:00. No es una venta ni un ingreso; ajusta el efectivo esperado. Las aperturas manuales históricas conservan su monto y la fecha/responsable de su registro original.
+Administrador: Ventas y caja → Fondo inicial. Puede declarar el monto durante el horario ordinario y antes de validar el cierre, con motivo. Se guardan monto anterior, monto nuevo, usuario, fecha/hora UTC mostrada en Lima, versión y demora desde las 19:00. No es una venta ni un ingreso; ajusta el efectivo esperado. Las aperturas manuales históricas conservan su monto y la fecha/responsable de su registro original.
 
 ## Atención fuera de horario
 
@@ -26,7 +26,11 @@ Administrador: Ventas y caja → Cierre y arqueo. Debe ingresar el efectivo cont
 
 Ejemplo: esperado S/240, contado S/200 → diferencia -S/40 y estado Con diferencias. No se reduce el ingreso a S/200 ni se borran ventas. Quedan ambos valores y las observaciones. Una revisión sin diferencias queda Conforme; con observaciones puede quedar Conforme con observaciones.
 
-Si después de una conformidad se registra una venta autorizada, vuelve a Pendiente de nueva conformidad. El nuevo conteo exige motivo y conserva todas las versiones anteriores. Ninguna revisión sustituye a una firma o a un conteo realmente realizado por el responsable.
+La validación del administrador es definitiva y cambia el turno a Validado. A partir de ese instante se rechazan pedidos cobrados, egresos, correcciones o anulaciones de movimientos, cambios de fondo, nuevas excepciones y nuevas revisiones. No se reabre el turno. El historial y los reportes siguen disponibles para consulta. Las revisiones de versiones anteriores se conservan.
+
+Ejemplo: a las 07:00 termina el horario y el turno queda Cerrado, pendiente de conformidad. Todavía se pueden autorizar ventas excepcionales. A las 07:30 el administrador verifica los cuatro medios, deja observaciones si corresponde y valida el cierre: queda Validado y no admite más operaciones, aunque quedara tiempo de una excepción. La mesera debe esperar al siguiente turno automático para nuevas ventas. El bloqueo también se aplica si la revisión final queda Con diferencias.
+
+La conformidad automática de un turno sin movimientos no inventa una revisión humana. El bloqueo definitivo por validación corresponde al acto explícito del administrador. Las excepciones autorizadas deben utilizarse antes de esa validación, no después.
 
 ## Pantallas y permisos
 
@@ -34,8 +38,8 @@ Cobros es de consulta y se actualiza por SignalR/WebSocket al ocurrir operacione
 
 ## Verificación
 
-- `tests/caja_automatica_integration.py`: reloj privado de desarrollo y PostgreSQL aislado. Límites de horario, ocho solicitudes concurrentes, cobro y vuelto, medios digitales, fondo tardío, permisos, fallo real de escritura de caja con reversión total, liberación sin duplicar, conformidad, excepciones, faltantes, día sin actividad y recuperación tras inactividad.
-- `tests/caja_automatica_ui.py`: cuentas separadas en navegadores reales, evento de cobro sin liberar mesa, ausencia de consultas periódicas, fondo con demora, egreso, conformidad y revisión posterior con observaciones.
+- `tests/caja_automatica_integration.py`: reloj privado de desarrollo y PostgreSQL aislado. Límites de horario, ocho solicitudes concurrentes, cobro y vuelto, medios digitales, fondo tardío, permisos, fallo real de escritura de caja con reversión total, liberación sin duplicar, validación definitiva, rechazo de operaciones posteriores, excepciones previas, faltantes, día sin actividad y recuperación tras inactividad.
+- `tests/caja_automatica_ui.py`: cuentas separadas en navegadores reales, evento de cobro sin liberar mesa, ausencia de consultas periódicas, fondo con demora, egreso, validación definitiva con observaciones y bloqueo posterior en pantalla.
 - `tests/carta_integration.py`: regresión de combos, recetas, tickets, hielo, stock y concurrencia con cobro automático activo.
 
 El reloj de ensayo solo se lee en Development mediante un archivo privado configurado por el entorno. No hay un endpoint público para cambiar la hora. Las pruebas y capturas locales son de demostración; no evidencian operaciones físicas del establecimiento.

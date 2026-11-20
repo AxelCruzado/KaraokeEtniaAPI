@@ -94,6 +94,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones, CajaAutomat
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Serialize(i))));
         var previous = await db.Movimientos.Include(m => m.Pagos).SingleOrDefaultAsync(m => m.TurnoId == t.Id && m.ClaveOperacion == key);
         if (previous != null) { if (previous.HuellaSolicitud != hash) throw new CajaError("Clave utilizada con otros datos.", 409); return previous; }
+        await horario.ExigirSinValidar(t);
         var extra = i.Automatico && i.PedidoOrigenId != null && t.Estado == "Cerrado" && t.AtencionExtraHasta > horario.Ahora && horario.Ahora >= t.Fin;
         if (!extra) Open(t); Payments(i.Pagos, i.Importe); Category(i.Tipo, i.Naturaleza, i.Categoria);
         if (i.FechaOperacion.Kind != DateTimeKind.Unspecified || i.FechaOperacion < t.Inicio || (i.FechaOperacion >= t.Fin && !(extra && i.FechaOperacion < t.AtencionExtraHasta))) throw new CajaError("Fecha/hora local fuera del turno: inicio 19:00 incluido y fin 07:00 del día siguiente excluido, America/Lima.");
@@ -108,6 +109,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones, CajaAutomat
     });
     public Task<MovimientoCaja> Corregir(string turnoId, string id, CorreccionInput i, string user) => Locked(turnoId, async t =>
     {
+        await horario.ExigirSinValidar(t);
         Open(t); var reason = Text(i.Motivo, "Motivo", 500);
         if(await operaciones.Compras.AnyAsync(c=>c.MovimientoCajaId==id)) throw new CajaError("El egreso está vinculado a una recepción de compra; no se modifica ni anula aisladamente.",409);
         var m = await db.Movimientos.Include(x => x.Pagos).SingleOrDefaultAsync(x => x.Id == id && x.TurnoId == t.Id) ?? throw new CajaError("Movimiento no encontrado.", 404);
@@ -120,6 +122,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones, CajaAutomat
     });
     public Task<MovimientoCaja> Anular(string turnoId, string id, AnulacionInput i, string user, bool compraAutorizada = false) => Locked(turnoId, async t =>
     {
+        await horario.ExigirSinValidar(t);
         Open(t); var reason = Text(i.Motivo, "Motivo", 500);
         if(!compraAutorizada && await operaciones.Compras.AnyAsync(c=>c.MovimientoCajaId==id)) throw new CajaError("El egreso está vinculado a una recepción de compra; no se modifica ni anula aisladamente.",409);
         var m = await db.Movimientos.Include(x => x.Pagos).SingleOrDefaultAsync(x => x.Id == id && x.TurnoId == t.Id) ?? throw new CajaError("Movimiento no encontrado.", 404);
@@ -147,7 +150,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones, CajaAutomat
         var ultimoArqueo = await db.Cierres.AsNoTracking().Where(c=>c.TurnoId==id).OrderByDescending(c=>c.Version).FirstOrDefaultAsync();
         var sinActividad=t.Estado=="Cerrado" && t.FondoInicial==0 && ultimoArqueo==null && !await db.Movimientos.AnyAsync(m=>m.TurnoId==id);
         var cambiado = ultimoArqueo != null && await db.Movimientos.AnyAsync(m=>m.TurnoId==id && m.RegistradoUtc>ultimoArqueo.RegistradoUtc);
-        return new { arqueoPendiente = !sinActividad && (ultimoArqueo == null || string.IsNullOrEmpty(ultimoArqueo.EstadoConformidad) || cambiado), arqueoDesactualizado = cambiado, atencionExtraVigente = t.AtencionExtraHasta > horario.Ahora, resumen = await Summary(t), cierres = await db.Cierres.AsNoTracking().Where(c => c.TurnoId == id).OrderBy(c => c.Version).ToListAsync(), reportes = await db.Reportes.AsNoTracking().Where(c => c.TurnoId == id).OrderBy(c => c.Version).ToListAsync(), historial = await db.Auditorias.AsNoTracking().Where(c => c.TurnoId == id).OrderByDescending(c => c.Id).ToListAsync() };
+        return new { arqueoPendiente = !sinActividad && (ultimoArqueo == null || string.IsNullOrEmpty(ultimoArqueo.EstadoConformidad) || cambiado), arqueoDesactualizado = cambiado, atencionExtraVigente = t.Estado=="Cerrado" && t.AtencionExtraHasta > horario.Ahora, resumen = await Summary(t), cierres = await db.Cierres.AsNoTracking().Where(c => c.TurnoId == id).OrderBy(c => c.Version).ToListAsync(), reportes = await db.Reportes.AsNoTracking().Where(c => c.TurnoId == id).OrderBy(c => c.Version).ToListAsync(), historial = await db.Auditorias.AsNoTracking().Where(c => c.TurnoId == id).OrderByDescending(c => c.Id).ToListAsync() };
     }
     public Task<CierreCaja> Cerrar(string id, CierreInput i, string user) => Locked(id, async t =>
     {
@@ -155,6 +158,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones, CajaAutomat
         if (i.Contado == null) throw new CajaError("Introduzca el efectivo contado físicamente."); Money(i.Contado.Value, true);
         var prev = await db.Cierres.SingleOrDefaultAsync(c => c.TurnoId == id && c.ClaveOperacion == key);
         if (prev != null) { if (prev.Contado != i.Contado.Value || prev.YapeVerificado!=i.Yape || prev.PlinVerificado!=i.Plin || prev.TarjetaVerificado!=i.Tarjeta || prev.Observaciones!=(i.Observaciones??"")) throw new CajaError("Clave utilizada con otro conteo.", 409); return prev; }
+        await horario.ExigirSinValidar(t);
         if (t.Estado != "Abierto" && !(horario.Enabled && t.Estado=="Cerrado")) Open(t);
         if (await db.Cierres.AnyAsync(c=>c.TurnoId==id) && string.IsNullOrWhiteSpace(i.Motivo)) throw new CajaError("Indica el motivo del nuevo arqueo; el anterior se conserva.");
         var s = await Summary(t); var expected = JsonSerializer.SerializeToElement(s, Json).GetProperty("efectivoEsperado").GetDecimal();
@@ -165,11 +169,12 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones, CajaAutomat
         if(horario.Enabled && difference && string.IsNullOrWhiteSpace(i.Observaciones))throw new CajaError("Registra observaciones para explicar las diferencias encontradas.");
         if((i.Observaciones?.Length??0)>2000)throw new CajaError("Las observaciones no deben superar 2000 caracteres.");
         var close = new CierreCaja { RegistradoUtc=horario.UtcNow, YapeVerificado=i.Yape,PlinVerificado=i.Plin,TarjetaVerificado=i.Tarjeta,Observaciones=i.Observaciones??"",EstadoConformidad=horario.Enabled?(difference?"Con diferencias":string.IsNullOrWhiteSpace(i.Observaciones)?"Conforme":"Conforme con observaciones"):"Arqueo anterior", Codigo = Code("CIE"), TurnoId = id, Version = await db.Cierres.CountAsync(c => c.TurnoId == id) + 1, Responsable = user, Contado = i.Contado.Value, Esperado = expected, Diferencia = i.Contado.Value - expected, SnapshotJson = Serialize(s), ClaveOperacion = key };
-        t.Estado = "Cerrado"; t.CajaActiva = null; db.Cierres.Add(close);
-        Audit(t, close.Codigo, "Cierre v" + close.Version, user, "Conteo físico informado por el responsable. "+i.Motivo, new { estado = t.Estado }, new { estado = "Cerrado", close.Codigo, close.Contado, close.Esperado, close.Diferencia }); return close;
+        t.Estado = horario.Enabled?"Validado":"Cerrado"; t.CajaActiva = null; db.Cierres.Add(close);
+        Audit(t, close.Codigo, "Cierre v" + close.Version, user, "Conteo físico informado por el responsable. "+i.Motivo, new { estado = t.Estado }, new { estado = t.Estado, close.Codigo, close.Contado, close.Esperado, close.Diferencia }); return close;
     });
     public Task<TurnoCaja> DeclararFondo(string id, FondoInput i, string user) => Locked(id, async t =>
     {
+        await horario.ExigirSinValidar(t);
         Money(i.Monto,true); var reason=Text(i.Motivo,"Motivo"); var now=horario.Ahora;
         if(t.Estado!="Abierto" || now<t.Inicio || now>=t.Fin) throw new CajaError("El fondo se declara durante el turno, de 19:00 a 07:00.",409);
         if(t.VersionFondo!=i.VersionEsperada) throw new CajaError("El fondo cambió; revisa el monto actual.",409);
@@ -180,6 +185,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones, CajaAutomat
     });
     public Task<TurnoCaja> AutorizarExtra(string id, ExcepcionHorarioInput i, string user) => Locked(id, async t =>
     {
+        await horario.ExigirSinValidar(t);
         var reason=Text(i.Motivo,"Motivo de excepción");var now=horario.Ahora;
         if(t.Estado!="Cerrado" || now<t.Fin || now>=t.Fin.Date.AddHours(19))throw new CajaError("La excepción corresponde al turno terminado esta mañana, antes del siguiente turno.",409);
         if(i.Hasta.Kind!=DateTimeKind.Unspecified || i.Hasta<=now || i.Hasta>t.Fin.Date.AddHours(19))throw new CajaError("Indica una hora límite futura anterior o igual a las 19:00.");
@@ -190,6 +196,7 @@ public class CajaService(CajaDbContext db, AppDbContext operaciones, CajaAutomat
     });
     public Task<TurnoCaja> Reabrir(string id, MotivoInput i, string user) => Locked(id, async t =>
     {
+        await horario.ExigirSinValidar(t);
         var reason = Text(i.Motivo, "Motivo de reapertura", 500);
         if (t.Estado != "Cerrado") throw new CajaError("El turno no está cerrado.", 409);
         if (await db.Turnos.AnyAsync(x => x.CajaActiva == t.Caja)) throw new CajaError("Otra caja del mismo código está abierta.", 409);

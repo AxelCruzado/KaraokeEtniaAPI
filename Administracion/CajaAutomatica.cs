@@ -26,6 +26,17 @@ public class CajaAutomatica(CajaDbContext db, IConfiguration config, IWebHostEnv
     public DateTime Ahora => DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(UtcNow, TimeZoneInfo.FindSystemTimeZoneById("America/Lima")), DateTimeKind.Unspecified);
     public static DateTime FechaTurno(DateTime local) => local.Hour < 7 ? local.Date.AddDays(-1) : local.Date;
 
+    public async Task<bool> TieneValidacion(TurnoCaja turno)
+    {
+        if(turno.Estado=="Validado")return true;
+        var revision=await db.Cierres.AsNoTracking().Where(c=>c.TurnoId==turno.Id && (c.EstadoConformidad=="Conforme" || c.EstadoConformidad=="Conforme con observaciones" || c.EstadoConformidad=="Con diferencias")).OrderByDescending(c=>c.Version).FirstOrDefaultAsync();
+        return revision!=null && !await db.Movimientos.AnyAsync(m=>m.TurnoId==turno.Id && m.RegistradoUtc>revision.RegistradoUtc);
+    }
+    public async Task ExigirSinValidar(TurnoCaja turno)
+    {
+        if(await TieneValidacion(turno))throw new CajaError("El administrador ya validó el cierre. El turno está bloqueado y no admite más ventas, egresos, cambios de fondo ni excepciones.",409);
+    }
+
     public async Task Sincronizar()
     {
         if (!Enabled) return;
@@ -38,6 +49,12 @@ public class CajaAutomatica(CajaDbContext db, IConfiguration config, IWebHostEnv
             var cursor = (await DatabaseRows.Locked<CalendarioCaja>(db, 1).ToListAsync()).Single();
             await db.Entry(cursor).ReloadAsync();
             var now = Ahora;
+            var revisados=await db.Turnos.Where(t=>t.Estado!="Validado" && db.Cierres.Any(c=>c.TurnoId==t.Id && (c.EstadoConformidad=="Conforme" || c.EstadoConformidad=="Conforme con observaciones" || c.EstadoConformidad=="Con diferencias"))).Select(t=>t.Id).ToListAsync();
+            foreach(var id in revisados){
+                var t=(await DatabaseRows.Locked<TurnoCaja>(db,id).ToListAsync()).Single();await db.Entry(t).ReloadAsync();
+                if(await TieneValidacion(t)){t.Estado="Validado";t.CajaActiva=null;Audit(t,"Bloqueo por conformidad del administrador","La revisión final ya está registrada; se bloquean nuevas operaciones.");changed=true;}
+            }
+            await db.SaveChangesAsync();
             var expired = await db.Turnos.Where(t => t.Estado == "Abierto" && t.Fin <= now).Select(t => t.Id).ToListAsync();
             foreach (var id in expired)
             {
@@ -52,7 +69,7 @@ public class CajaAutomatica(CajaDbContext db, IConfiguration config, IWebHostEnv
                     Audit(t,"Conformidad automática sin movimientos","Turno sin movimientos y fondo S/0. No se registra un arqueo físico ficticio.");
                 changed = true;
             }
-            var extrasVencidas=await db.Turnos.Where(t=>t.AtencionExtraHasta!=null && t.AtencionExtraHasta<=now).Select(t=>t.Id).ToListAsync();
+            var extrasVencidas=await db.Turnos.Where(t=>t.Estado=="Cerrado" && t.AtencionExtraHasta!=null && t.AtencionExtraHasta<=now).Select(t=>t.Id).ToListAsync();
             foreach(var id in extrasVencidas){
                 var t=(await DatabaseRows.Locked<TurnoCaja>(db,id).ToListAsync()).Single();await db.Entry(t).ReloadAsync();
                 var action="Fin de atención extra v"+t.VersionExcepcion;
@@ -97,6 +114,7 @@ public class CajaAutomatica(CajaDbContext db, IConfiguration config, IWebHostEnv
         if (id == null) throw new CajaError("Fuera del horario de atención. Los pedidos se registran de 19:00 a 07:00, hora de Lima, en los días configurados.", 409);
         var t = (await DatabaseRows.Locked<TurnoCaja>(db, id).ToListAsync()).Single();
         await db.Entry(t).ReloadAsync();
+        await ExigirSinValidar(t);
         now = Ahora;
         if (!((t.Estado == "Abierto" && now >= t.Inicio && now < t.Fin) || (t.Estado == "Cerrado" && now >= t.Fin && t.AtencionExtraHasta > now))) throw new CajaError("El turno ya terminó. El pedido no fue cobrado ni descontado del inventario.", 409);
         return t;
@@ -107,7 +125,8 @@ public class CajaAutomatica(CajaDbContext db, IConfiguration config, IWebHostEnv
         var now = Ahora;
         var t = await db.Turnos.AsNoTracking().SingleOrDefaultAsync(t => t.Caja == Nombre && t.Inicio <= now && t.Fin > now);
         t ??= await db.Turnos.AsNoTracking().Where(t => t.Caja == Nombre && t.Estado == "Cerrado" && t.Fin <= now && t.AtencionExtraHasta > now).OrderByDescending(t => t.Fin).FirstOrDefaultAsync();
-        return new { automatico = Enabled, horaLima = now, dias = Dias, fondoConfigurado = Fondo, habilitado = t != null && (t.Estado == "Abierto" || t.AtencionExtraHasta > now), fueraDeHorario = t?.Estado == "Cerrado", turno = t, horario = "19:00–07:00 · America/Lima" };
+        t ??= await db.Turnos.AsNoTracking().Where(t=>t.Caja==Nombre && t.Estado=="Validado" && t.Fin<=now && t.Fin.Date==now.Date).OrderByDescending(t=>t.Fin).FirstOrDefaultAsync();
+        return new { bloqueado=t?.Estado=="Validado", automatico = Enabled, horaLima = now, dias = Dias, fondoConfigurado = Fondo, habilitado = t != null && (t.Estado == "Abierto" || (t.Estado=="Cerrado" && t.AtencionExtraHasta > now)), fueraDeHorario = t?.Estado == "Cerrado", turno = t, horario = "19:00–07:00 · America/Lima" };
     }
 }
 

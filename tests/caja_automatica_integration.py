@@ -3,7 +3,7 @@ import json,uuid,urllib.request,urllib.error,urllib.parse,subprocess,os
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 BASE=os.getenv('AUTO_TEST_URL','http://127.0.0.1:5113');assert urllib.parse.urlparse(BASE).hostname in ('127.0.0.1','localhost')
-CLOCK=Path('/workspace/validacion-caja-automatica/reloj.txt');checks=[];http=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+CLOCK=Path(os.getenv('AUTO_TEST_CLOCK','/workspace/validacion-caja-automatica/reloj.txt'));checks=[];http=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 def req(path,data=None,token=None,status=200,method=None,form=None):
  headers={'Authorization':'Bearer '+token}if token else{}
  if form is not None:raw=urllib.parse.urlencode(form).encode();headers['Content-Type']='application/x-www-form-urlencoded'
@@ -72,20 +72,30 @@ req(root+'/fondo',{'monto':200,'versionEsperada':1,'motivo':'Tarde'},a,409)
 ok('07:00 finaliza automáticamente sin inventar arqueo ni visto bueno; no registra pedidos fuera de horario sin autorización')
 confirm={'claveOperacion':uuid.uuid4().hex,'contado':107,'yape':12,'plin':12,'tarjeta':12,'confirmoRevision':True,'observaciones':''}
 req(root+'/cierres',{**confirm,'confirmoRevision':False},a,400);req(root+'/cierres',confirm,m,403)
-clock('2026-11-21T12:05:00Z');first=req(root+'/cierres',confirm,a);assert first['estadoConformidad']=='Conforme'and summary()['conformidad']=='Conforme';assert req(root+'/cierres',confirm,a)==first
-ok('Administrador confirma efectivo y tres medios digitales a las 07:05; revisión obligatoria e idempotente')
+clock('2026-11-21T12:05:00Z');assert not detail()['cierres'];ok('07:05 continúa pendiente hasta que el administrador decida validar definitivamente')
 extra={'hasta':'2026-11-21T08:00:00','motivo':'Clientes continúan en el local','versionEsperada':0}
 req(root+'/atencion-extra',extra,m,403);authorized=req(root+'/atencion-extra',extra,a);assert authorized['estado']=='Cerrado'
-clock('2026-11-21T12:30:00Z');r=order();assert r['turnoId']==tid and r['fueraDeHorario'];d=detail();assert d['arqueoDesactualizado']and d['resumen']['conformidad']=='Pendiente de nueva conformidad';assert d['cierres'][0]==first
+clock('2026-11-21T12:30:00Z');r=order();assert r['turnoId']==tid and r['fueraDeHorario'];d=detail();assert d['arqueoPendiente']and not d['cierres']and d['resumen']['conformidad']=='Pendiente de conformidad'
 assert d['resumen']['ventasFueraHorario']==1 and any('Fuera de horario'in x['concepto']for x in d['resumen']['movimientos']);assert d['resumen']['efectivoEsperado']==119
-ok('Venta 07:30 se identifica como excepción en turno cerrado y exige nueva conformidad sin sobrescribir la anterior')
-new={**confirm,'claveOperacion':uuid.uuid4().hex,'motivo':'Revisión después de venta fuera de horario'}
+ok('Antes de la validación permite ventas excepcionales en turno finalizado a las 07:00')
+new={**confirm,'claveOperacion':uuid.uuid4().hex}
 req(root+'/cierres',new,a,400)
-new['observaciones']='Faltan S/12 respecto al sistema; se investiga la entrega de efectivo.'
-second=req(root+'/cierres',new,a);assert second['esperado']==119 and second['contado']==107 and second['diferencia']==-12 and second['estadoConformidad']=='Con diferencias'
-assert summary()['ingresos']==60 and len(detail()['cierres'])==2;ok('Conserva esperado119, contado107 y faltante12 con observaciones; no borra ni reduce ventas')
-req(root+'/atencion-extra',extra,a,409)
-clock('2026-11-21T13:00:00Z');order(status=409);ok('La excepción vence exactamente a la hora límite')
+new['contado']=119
+closed=req(root+'/cierres',new,a);assert closed['estadoConformidad']=='Conforme' and summary()['turno']['estado']=='Validado'
+assert req(root+'/cierres',new,a)==closed
+before_stock=stock();before_summary=summary();before_hist=detail()['historial']
+order(status=409)
+req(root+'/atencion-extra',{**extra,'versionEsperada':1,'hasta':'2026-11-21T09:00:00'},a,409)
+req(root+'/movimientos',{**expense,'claveOperacion':uuid.uuid4().hex},a,409)
+req(root+'/fondo',{'monto':200,'versionEsperada':1,'motivo':'No permitido tras validación'},a,409)
+req(root+'/cierres',{**new,'claveOperacion':uuid.uuid4().hex,'motivo':'No debe volver a editarse'},a,409)
+expense_id=next(x['id']for x in before_summary['movimientos']if x['tipo']=='Egreso')
+req(root+'/movimientos/'+expense_id+'/anulacion',{'motivo':'No permitido','anulado':True,'versionEsperada':1},a,409)
+req(root+'/reabrir',{'motivo':'No permitido'},a,409)
+assert stock()==before_stock and summary()==before_summary and detail()['historial']==before_hist
+assert not req('/api/carta/turno',token=m)['habilitado']
+ok('Validación final Conforme bloquea pedidos, egresos, fondo, excepciones, edición y reapertura sin cambios parciales')
+clock('2026-11-21T13:00:00Z');order(status=409);ok('El turno validado permanece bloqueado cuando vence la autorización anterior')
 clock('2026-11-22T00:00:00Z');turns=req('/api/caja/turnos',token=a);assert len(turns)==2 and turns[0]['fondoInicial']==0 and turns[0]['fondoDeclaradoUtc']is None
 assert turns[0]['id']!=tid;ok('Siguiente noche abre otro turno independiente con cero y sin arrastrar el fondo anterior')
 # Exact business example: expected S/240, physical S/200 -> shortage S/40.
@@ -95,6 +105,9 @@ order(payload)
 clock('2026-11-22T12:00:00Z');assert req(root2,token=a)['resumen']['efectivoEsperado']==240
 review=req(root2+'/cierres',{'claveOperacion':uuid.uuid4().hex,'contado':200,'yape':0,'plin':0,'tarjeta':0,'observaciones':'Faltan cuarenta soles; responsable revisará la entrega.','confirmoRevision':True},a)
 assert review['esperado']==240 and review['contado']==200 and review['diferencia']==-40 and review['estadoConformidad']=='Con diferencias'
+assert req(root2,token=a)['resumen']['turno']['estado']=='Validado'
+order(status=409)
+req(root2+'/atencion-extra',{'hasta':'2026-11-22T08:00:00','motivo':'No permitido','versionEsperada':0},a,409)
 ok('Caso del negocio: esperado240, contado200, faltante40; se conserva el ingreso original')
 # The next scheduled day has no activity: no fabricated physical count is required.
 clock('2026-11-23T00:00:00Z');empty=req('/api/carta/turno',token=m)['turno'];assert empty['fondoInicial']==0
