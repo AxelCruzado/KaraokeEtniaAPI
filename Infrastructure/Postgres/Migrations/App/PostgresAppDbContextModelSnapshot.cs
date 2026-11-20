@@ -50,6 +50,91 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.App
                     b.ToTable("AccionesAdministrativas");
                 });
 
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.CartaProducto", b =>
+                {
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("character varying(70)");
+
+                    b.Property<string>("ConfigJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("HieloInicial")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Unidad")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<bool>("Vendible")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("ProductoId");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("CartaProductos", (string)null);
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.CartaRegistro", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Clave")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Json")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("MesaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PedidoId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Clave")
+                        .IsUnique();
+
+                    b.ToTable("CartaRegistros", (string)null);
+                });
+
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Categoria", b =>
                 {
                     b.Property<int>("Id")
@@ -290,6 +375,11 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.App
                     b.Property<int>("Cantidad")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
                     b.Property<int>("PedidoId")
                         .HasColumnType("integer");
 
@@ -318,6 +408,11 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.App
 
                     b.Property<int>("Cantidad")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<int>("PedidoHistorialId")
                         .HasColumnType("integer");
@@ -552,6 +647,17 @@ namespace KaraokeEtniaApi.Infrastructure.Postgres.Migrations.App
                     b.HasKey("Id");
 
                     b.ToTable("StoredImages", (string)null);
+                });
+
+            modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.CartaProducto", b =>
+                {
+                    b.HasOne("KaraokeEtniaApi.Domain.Entities.Producto", "Producto")
+                        .WithOne()
+                        .HasForeignKey("KaraokeEtniaApi.Domain.Entities.CartaProducto", "ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
                 });
 
             modelBuilder.Entity("KaraokeEtniaApi.Domain.Entities.Compra", b =>

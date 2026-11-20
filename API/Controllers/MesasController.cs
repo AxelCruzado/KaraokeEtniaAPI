@@ -62,6 +62,7 @@ public class MesasController : ControllerBase
                 {
                     Id = d.Id,
                     ProductoId = d.ProductoId,
+                        Descripcion = d.Descripcion,
                     Cantidad = d.Cantidad,
                     Total = d.Total,
                     Producto = new ProductoDto
@@ -114,6 +115,7 @@ public class MesasController : ControllerBase
                 {
                     Id = d.Id,
                     ProductoId = d.ProductoId,
+                        Descripcion = d.Descripcion,
                     Cantidad = d.Cantidad,
                     Total = d.Total,
                     Producto = new ProductoDto
@@ -155,6 +157,7 @@ public class MesasController : ControllerBase
             {
                 Id = d.Id,
                 ProductoId = d.ProductoId,
+                        Descripcion = d.Descripcion,
                 Cantidad = d.Cantidad,
                 Total = d.Total,
                 Producto = new ProductoDto
@@ -242,112 +245,30 @@ public class MesasController : ControllerBase
     {
         try
         {
-            var mesa = await _context.Mesas.FindAsync(id);
-            if (mesa == null)
-                return NotFound(new { Message = "Mesa no encontrada." });
-
-            if (pedidoRequest.Detalles == null || !pedidoRequest.Detalles.Any())
-                return BadRequest(new { Message = "Debe incluir al menos un producto en el pedido." });
-
-            decimal totalPedido = 0;
-            var pedido = new PedidoActivo { MesaId = id };
-
-            foreach (var detalle in pedidoRequest.Detalles)
-            {
-                if(detalle.Cantidad <= 0) throw new Exception("Cantidad inválida.");
-                var producto = await _context.Productos.FindAsync(detalle.ProductoId);
-                if (producto == null)
-                    throw new Exception($"Producto con ID {detalle.ProductoId} no encontrado.");
-                if (producto.Stock < detalle.Cantidad)
-                    throw new Exception($"Stock insuficiente para el producto {producto.Nombre}.");
-
-                var totalDetalle = producto.Precio * detalle.Cantidad;
-                var pedidoDetalle = new PedidoDetalle
-                {
-                    ProductoId = detalle.ProductoId,
-                    Cantidad = detalle.Cantidad,
-                    Total = totalDetalle
-                };
-                pedido.Detalles.Add(pedidoDetalle);
-                totalPedido += totalDetalle;
-
-                producto.Stock -= detalle.Cantidad;
-                if (producto.TicketsPorUnidad > 0)
-                {
-                    mesa.TicketsDisponibles += detalle.Cantidad * producto.TicketsPorUnidad;
-                }
-            }
-
-            decimal saldoUtilizado = Math.Min(mesa.Saldo, totalPedido);
-            decimal montoRestante = totalPedido - saldoUtilizado;
-            decimal montoPagadoTotal = pedidoRequest.PagoCliente;
-
-            if (montoRestante > 0 && montoPagadoTotal < montoRestante && string.IsNullOrEmpty(pedidoRequest.MetodoPago))
-                return BadRequest(new { Message = "El monto pagado no cubre el resto del pedido. Por favor, ingrese un pago mayor o use otro método." });
-
-            if (montoRestante <= 0 || (montoPagadoTotal >= montoRestante))
-            {
-                decimal cambio = (mesa.Saldo + montoPagadoTotal) - totalPedido;
-                if (cambio >= 0)
-                {
-                    mesa.Saldo = cambio;
-                }
-                else
-                {
-                    mesa.Saldo = 0;
-                    montoPagadoTotal -= montoRestante;
-                }
-            }
-            else
-            {
-                return BadRequest(new { Message = "El saldo y el monto pagado no son suficientes para cubrir el pedido." });
-            }
-
-            if (mesa.Estado == EstadoMesa.Disponible)
-            {
-                mesa.Estado = EstadoMesa.Ocupado;
-            }
-
-            pedido.Total = totalPedido;
-            pedido.MetodoPago = pedidoRequest.MetodoPago;
-            pedido.PagoCliente = pedidoRequest.PagoCliente;
-            _context.PedidosActivos.Add(pedido);
-            await _context.SaveChangesAsync();
-
-            var mensajeAdmin = $"Nuevo pedido en Mesa {id}: Total {totalPedido} S/. con {pedidoRequest.Detalles.Count} productos. Método de pago: {pedidoRequest.MetodoPago ?? "Sin especificar"}, Pago: {pedidoRequest.PagoCliente} S/.";
-            await _hubContext.Clients.Group("Administradores").SendAsync("RecibirNotificacion", id, mensajeAdmin);
-
-            // Notificar a Meseras
-            Console.WriteLine($"Enviando MesaActualizada a Meseras: Mesa {id}, Estado: {mesa.Estado}");
-            await _hubContext.Clients.Group("Meseras").SendAsync("MesaActualizada", id, mesa.Estado.ToString());
-            Console.WriteLine($"Enviando SolicitudActualizada a Meseras: Mesa {id}, Mensaje: {mensajeAdmin}");
-            await _hubContext.Clients.Group("Meseras").SendAsync("SolicitudActualizada", id, mensajeAdmin);
-
-            // Notificar a todos los clientes sobre la actualización de la mesa
-            Console.WriteLine($"Enviando MesaActualizada a todos: Mesa {id}, Estado: Pedido registrado");
-            await _hubContext.Clients.All.SendAsync("MesaActualizada", id, "Pedido registrado");
-
-            return Ok(new { Message = "Pedido registrado exitosamente.", PedidoId = pedido.Id });
+            var result=await HttpContext.RequestServices.GetRequiredService<KaraokeEtniaApi.Administracion.CartaService>().Registrar(id,pedidoRequest,User.Identity!.Name!);
+            var mensajeAdmin = $"Nuevo pedido registrado en mesa {id}.";
+            await _hubContext.Clients.All.SendAsync("MesaActualizada",id,"Pedido registrado");
+            await _hubContext.Clients.Group("Administradores").SendAsync("RecibirNotificacion",id,mensajeAdmin);
+            return Ok(result);
         }
+        catch (KaraokeEtniaApi.Administracion.CajaError e){return StatusCode(e.Status,new{message=e.Message});}
+        catch (DbUpdateException){return Conflict(new{message="Los datos cambiaron; actualiza y reintenta el mismo pedido."});}
         catch (Exception ex)
         {
-            var errorMessage = ex.Message;
-            var innerException = ex.InnerException;
-            while (innerException != null)
-            {
-                errorMessage += $" | Inner Exception: {innerException.Message}";
-                innerException = innerException.InnerException;
-            }
-            return BadRequest(new { Message = $"Error al procesar el pedido: {errorMessage}" });
+            HttpContext.RequestServices.GetRequiredService<ILogger<MesasController>>().LogError(ex,"Error al registrar pedido en mesa {MesaId}",id);
+            return StatusCode(500,new{message="No se pudo registrar el pedido. Reintenta con la misma operación."});
         }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Cajero,Mesera")]
     [HttpPost("{id}/liberar")]
     public async Task<IActionResult> LiberarMesa(int id)
     {
         try
         {
+            await using var tx=await _context.Database.BeginTransactionAsync();
+            await KaraokeEtniaApi.Infrastructure.Postgres.DatabaseRows.Locked<Mesa>(_context,id).ToListAsync();
+
             var mesa = await _context.Mesas
                 .Include(m => m.PedidosActivos)
                 .ThenInclude(pa => pa.Detalles)
@@ -373,6 +294,7 @@ public class MesasController : ControllerBase
                     Detalles = pedidoActivo.Detalles.Select(d => new PedidoDetalleHistorial
                     {
                         ProductoId = d.ProductoId,
+                        Descripcion = d.Descripcion,
                         Cantidad = d.Cantidad,
                         Total = d.Total
                     }).ToList()
@@ -403,6 +325,7 @@ public class MesasController : ControllerBase
             mesa.Saldo = 0;
 
             await _context.SaveChangesAsync();
+            await tx.CommitAsync();
 
             // Notificar a Administradores y Meseras
             var mensaje = $"Mesa {id} ha sido liberada.";

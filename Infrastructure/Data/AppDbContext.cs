@@ -5,6 +5,8 @@ namespace KaraokeEtniaApi.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {
+    public DbSet<CartaProducto> CartaProductos => Set<CartaProducto>();
+    public DbSet<CartaRegistro> CartaRegistros => Set<CartaRegistro>();
     public DbSet<Proveedor> Proveedores => Set<Proveedor>();
     public DbSet<Compra> Compras => Set<Compra>();
     public DbSet<CompraLinea> CompraLineas => Set<CompraLinea>();
@@ -32,6 +34,10 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CartaProducto>(e=>{e.ToTable("CartaProductos");e.HasKey(x=>x.ProductoId);e.HasOne(x=>x.Producto).WithOne().HasForeignKey<CartaProducto>(x=>x.ProductoId).OnDelete(DeleteBehavior.Restrict);e.Property(x=>x.Codigo).HasMaxLength(70);e.HasIndex(x=>x.Codigo).IsUnique();e.Property(x=>x.Tipo).HasMaxLength(30);e.Property(x=>x.Unidad).HasMaxLength(40);e.Property(x=>x.ConfigJson).HasColumnType("longtext");});
+        modelBuilder.Entity<CartaRegistro>(e=>{e.ToTable("CartaRegistros");e.HasKey(x=>x.Id);e.Property(x=>x.Id).HasMaxLength(32);e.Property(x=>x.Clave).HasMaxLength(100);e.HasIndex(x=>x.Clave).IsUnique();e.Property(x=>x.Hash).HasMaxLength(64);e.Property(x=>x.Tipo).HasMaxLength(40);e.Property(x=>x.Usuario).HasMaxLength(50);e.Property(x=>x.Json).HasColumnType("longtext");});
+        modelBuilder.Entity<PedidoDetalle>().Property(x=>x.Descripcion).HasMaxLength(2000);
+        modelBuilder.Entity<PedidoDetalleHistorial>().Property(x=>x.Descripcion).HasMaxLength(2000);
         modelBuilder.Entity<Producto>().Property(p => p.Stock).IsConcurrencyToken();
         modelBuilder.Entity<Usuario>().Property(u => u.Activo).HasDefaultValue(true);
         modelBuilder.Entity<Proveedor>().Property(p => p.Documento).HasMaxLength(100);

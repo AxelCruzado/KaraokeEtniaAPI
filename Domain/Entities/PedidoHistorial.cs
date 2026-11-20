@@ -15,6 +15,7 @@ public class PedidoHistorial
 
 public class PedidoDetalleHistorial
 {
+    public string Descripcion {get;set;}="";
     public int Id { get; set; }
     public int PedidoHistorialId { get; set; }
     public PedidoHistorial PedidoHistorial { get; set; }

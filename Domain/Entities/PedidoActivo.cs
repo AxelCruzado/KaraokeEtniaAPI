@@ -18,6 +18,7 @@ public class PedidoActivo
 
 public class PedidoDetalle
 {
+    public string Descripcion {get;set;}="";
     public int Id { get; set; }
     public int PedidoId { get; set; }
     public PedidoActivo Pedido { get; set; }

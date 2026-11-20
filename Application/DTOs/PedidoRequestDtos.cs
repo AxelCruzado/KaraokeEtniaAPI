@@ -2,9 +2,10 @@
 {
     public class PedidoRequestDto
     {
+        public string? ClaveOperacion {get;set;}
         public List<PedidoDetalleRequestDto> Detalles { get; set; }
         public decimal PagoCliente { get; set; } = 0; // Pago por defecto 0
-        public string MetodoPago { get; set; } // "Efectivo", "Tarjeta", "Yape"
+        public string? MetodoPago { get; set; } // "Efectivo", "Tarjeta", "Yape"
     }
 
 }

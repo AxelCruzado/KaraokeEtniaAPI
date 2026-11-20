@@ -5,7 +5,8 @@ def products(category,names,minimum=2):
  assert re.fullmatch(r'[A-Z0-9a-z-]+',category) and all(re.fullmatch(r'[A-Z0-9a-z-]+',n) for n in names)
  base=['docker','--host=unix:///var/run/docker.sock','exec','-i']
  if os.getenv('CAJA_TEST_PROVIDER')=='PostgreSQL':
-  cmd=base+['etnia-dev-postgres','psql','-U','etnia','-d','etnia_pg','-At','-v','ON_ERROR_STOP=1']
+  database=os.getenv('CAJA_TEST_DATABASE','etnia_pg');assert re.fullmatch(r'etnia_[a-z0-9_]+',database)
+  cmd=base+['etnia-dev-postgres','psql','-U','etnia','-d',database,'-At','-v','ON_ERROR_STOP=1']
   category_id=int(subprocess.check_output(cmd,input=f'''INSERT INTO "Categorias" ("Nombre","ImagenUrl","Estado") VALUES ('{category}','','Activo') RETURNING "Id";'''.encode()).decode().splitlines()[0])
   ids=[]
   for name in names:

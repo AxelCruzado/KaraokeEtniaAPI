@@ -1,0 +1,364 @@
+{
+  "claveOperacion": "carta-demo-fa0db07cf8aa9cecc08bb665",
+  "fuente": "Carta_Etnia_y_preparacion_inventario2.xlsx; SHA256 fa0db07cf8aa9cecc08bb6653329fbcd98feeda5fc89624ce54e0392608ee958; LEEME: cantidades/costos ficticios para feria. Hielo: se agregan 4 bolsas ficticias (16 cuartos); costo confirmado S/8 por bolsa, S/2 por cuarto. No constituye uso real.",
+  "saldos": [
+    {
+      "codigo": "PILSEN330",
+      "cantidad": 240,
+      "minimo": 96,
+      "costoReferencia": 4.2
+    },
+    {
+      "codigo": "CRISTAL330",
+      "cantidad": 216,
+      "minimo": 96,
+      "costoReferencia": 4.2
+    },
+    {
+      "codigo": "CUSQUENA330",
+      "cantidad": 120,
+      "minimo": 48,
+      "costoReferencia": 5.1
+    },
+    {
+      "codigo": "CERVEZA620",
+      "cantidad": 72,
+      "minimo": 36,
+      "costoReferencia": 6.8
+    },
+    {
+      "codigo": "ARTESANAL",
+      "cantidad": 24,
+      "minimo": 12,
+      "costoReferencia": 8.5
+    },
+    {
+      "codigo": "PISCO750",
+      "cantidad": 18,
+      "minimo": 6,
+      "costoReferencia": 38
+    },
+    {
+      "codigo": "RONCARTAVIO",
+      "cantidad": 14,
+      "minimo": 6,
+      "costoReferencia": 32
+    },
+    {
+      "codigo": "RONFLOR",
+      "cantidad": 10,
+      "minimo": 4,
+      "costoReferencia": 40
+    },
+    {
+      "codigo": "VODKA",
+      "cantidad": 10,
+      "minimo": 4,
+      "costoReferencia": 45
+    },
+    {
+      "codigo": "REDLABEL",
+      "cantidad": 8,
+      "minimo": 3,
+      "costoReferencia": 62
+    },
+    {
+      "codigo": "BLACKLABEL",
+      "cantidad": 5,
+      "minimo": 2,
+      "costoReferencia": 115
+    },
+    {
+      "codigo": "TEQUILABOT",
+      "cantidad": 4,
+      "minimo": 2,
+      "costoReferencia": 70
+    },
+    {
+      "codigo": "CACHACABOT",
+      "cantidad": 3,
+      "minimo": 2,
+      "costoReferencia": 36
+    },
+    {
+      "codigo": "BRANDYBOT",
+      "cantidad": 3,
+      "minimo": 1,
+      "costoReferencia": 55
+    },
+    {
+      "codigo": "VINOBOT",
+      "cantidad": 20,
+      "minimo": 8,
+      "costoReferencia": 22
+    },
+    {
+      "codigo": "COLA15",
+      "cantidad": 48,
+      "minimo": 24,
+      "costoReferencia": 6.2
+    },
+    {
+      "codigo": "INCA15",
+      "cantidad": 48,
+      "minimo": 24,
+      "costoReferencia": 6.2
+    },
+    {
+      "codigo": "SPRITE15",
+      "cantidad": 30,
+      "minimo": 18,
+      "costoReferencia": 6
+    },
+    {
+      "codigo": "COLAPERSONAL",
+      "cantidad": 96,
+      "minimo": 36,
+      "costoReferencia": 2.3
+    },
+    {
+      "codigo": "INCAPersonal",
+      "cantidad": 96,
+      "minimo": 36,
+      "costoReferencia": 2.3
+    },
+    {
+      "codigo": "SPRITEPERSONAL",
+      "cantidad": 48,
+      "minimo": 24,
+      "costoReferencia": 2.2
+    },
+    {
+      "codigo": "AGUA",
+      "cantidad": 72,
+      "minimo": 36,
+      "costoReferencia": 1.3
+    },
+    {
+      "codigo": "VOLT",
+      "cantidad": 48,
+      "minimo": 24,
+      "costoReferencia": 3.6
+    },
+    {
+      "codigo": "REDBULL",
+      "cantidad": 36,
+      "minimo": 18,
+      "costoReferencia": 6.8
+    },
+    {
+      "codigo": "LIMONADA",
+      "cantidad": 12,
+      "minimo": 4,
+      "costoReferencia": 3.5
+    },
+    {
+      "codigo": "MARACUYA",
+      "cantidad": 10,
+      "minimo": 4,
+      "costoReferencia": 4.5
+    },
+    {
+      "codigo": "SALCHIPAPA",
+      "cantidad": 45,
+      "minimo": 15,
+      "costoReferencia": 5.5
+    },
+    {
+      "codigo": "ALITAS",
+      "cantidad": 36,
+      "minimo": 12,
+      "costoReferencia": 9.5
+    },
+    {
+      "codigo": "CHICHARRON",
+      "cantidad": 30,
+      "minimo": 10,
+      "costoReferencia": 8.5
+    },
+    {
+      "codigo": "TEQUENOS",
+      "cantidad": 30,
+      "minimo": 10,
+      "costoReferencia": 6
+    },
+    {
+      "codigo": "YUCA",
+      "cantidad": 40,
+      "minimo": 12,
+      "costoReferencia": 3.5
+    },
+    {
+      "codigo": "NACHOS",
+      "cantidad": 35,
+      "minimo": 12,
+      "costoReferencia": 5.5
+    },
+    {
+      "codigo": "PAPAS",
+      "cantidad": 50,
+      "minimo": 15,
+      "costoReferencia": 3
+    },
+    {
+      "codigo": "TABLA",
+      "cantidad": 12,
+      "minimo": 4,
+      "costoReferencia": 24
+    },
+    {
+      "codigo": "PISCOML",
+      "cantidad": 0,
+      "minimo": 0,
+      "costoReferencia": 0
+    },
+    {
+      "codigo": "RONBLANCOML",
+      "cantidad": 0,
+      "minimo": 0,
+      "costoReferencia": 0
+    },
+    {
+      "codigo": "RONML",
+      "cantidad": 0,
+      "minimo": 0,
+      "costoReferencia": 0
+    },
+    {
+      "codigo": "VODKAML",
+      "cantidad": 0,
+      "minimo": 0,
+      "costoReferencia": 0
+    },
+    {
+      "codigo": "TEQUILAML",
+      "cantidad": 0,
+      "minimo": 0,
+      "costoReferencia": 0
+    },
+    {
+      "codigo": "CACHACAML",
+      "cantidad": 0,
+      "minimo": 0,
+      "costoReferencia": 0
+    },
+    {
+      "codigo": "VINOML",
+      "cantidad": 0,
+      "minimo": 0,
+      "costoReferencia": 0
+    },
+    {
+      "codigo": "BRANDYML",
+      "cantidad": 0,
+      "minimo": 0,
+      "costoReferencia": 0
+    },
+    {
+      "codigo": "HIELO",
+      "cantidad": 16,
+      "minimo": 4,
+      "costoReferencia": 2
+    }
+  ],
+  "aperturas": [
+    {
+      "codigoOrigen": "PISCO750",
+      "codigoDestino": "PISCOML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 2; fecha ficticia 2026-11-20T19:05:00; Apertura de turno: saldo para Pisco Sour y Chilcano"
+    },
+    {
+      "codigoOrigen": "RONCARTAVIO",
+      "codigoDestino": "RONBLANCOML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 3; fecha ficticia 2026-11-20T19:10:00; Apertura de turno: saldo para Mojito, Piña colada y Daiquirí"
+    },
+    {
+      "codigoOrigen": "VINOBOT",
+      "codigoDestino": "VINOML",
+      "botellas": 2,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 4; fecha ficticia 2026-11-20T19:12:00; Apertura de turno: copas y sangría"
+    },
+    {
+      "codigoOrigen": "VODKA",
+      "codigoDestino": "VODKAML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 5; fecha ficticia 2026-11-20T19:15:00; Apertura de turno: shots"
+    },
+    {
+      "codigoOrigen": "TEQUILABOT",
+      "codigoDestino": "TEQUILAML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 6; fecha ficticia 2026-11-20T19:20:00; Apertura de turno: shots"
+    },
+    {
+      "codigoOrigen": "CACHACABOT",
+      "codigoDestino": "CACHACAML",
+      "botellas": 1,
+      "mililitrosPorBotella": 700,
+      "referencia": "Excel: Apertura de botellas fila 7; fecha ficticia 2026-11-20T19:25:00; Apertura de turno: Caipirinha"
+    },
+    {
+      "codigoOrigen": "PISCO750",
+      "codigoDestino": "PISCOML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 8; fecha ficticia 2026-11-20T20:40:00; Saldo abierto agotado; reposición en barra"
+    },
+    {
+      "codigoOrigen": "VINOBOT",
+      "codigoDestino": "VINOML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 9; fecha ficticia 2026-11-20T21:15:00; Pedido de sangrías en mesas"
+    },
+    {
+      "codigoOrigen": "RONCARTAVIO",
+      "codigoDestino": "RONBLANCOML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 10; fecha ficticia 2026-11-20T21:50:00; Saldo abierto agotado; reposición en barra"
+    },
+    {
+      "codigoOrigen": "PISCO750",
+      "codigoDestino": "PISCOML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 11; fecha ficticia 2026-11-20T22:30:00; Pedido de Pisco Sour y sangrías"
+    },
+    {
+      "codigoOrigen": "VODKA",
+      "codigoDestino": "VODKAML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 12; fecha ficticia 2026-11-20T23:10:00; Saldo abierto agotado por shots"
+    },
+    {
+      "codigoOrigen": "RONCARTAVIO",
+      "codigoDestino": "RONBLANCOML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 13; fecha ficticia 2026-11-20T23:45:00; Alta rotación de mojitos"
+    },
+    {
+      "codigoOrigen": "BRANDYBOT",
+      "codigoDestino": "BRANDYML",
+      "botellas": 1,
+      "mililitrosPorBotella": 700,
+      "referencia": "Excel: Apertura de botellas fila 14; fecha ficticia 2026-11-21T00:30:00; Sangría con brandy a pedido del cliente"
+    },
+    {
+      "codigoOrigen": "VINOBOT",
+      "codigoDestino": "VINOML",
+      "botellas": 1,
+      "mililitrosPorBotella": 750,
+      "referencia": "Excel: Apertura de botellas fila 15; fecha ficticia 2026-11-21T01:10:00; Copas de cierre de turno"
+    }
+  ]
+}

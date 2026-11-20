@@ -1,0 +1,1409 @@
+{
+  "productos": [
+    {
+      "codigo": "PILSEN330",
+      "nombre": "Pilsen personal 330 ml",
+      "categoria": "Cervezas",
+      "precio": 12,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "CRISTAL330",
+      "nombre": "Cristal personal 330 ml",
+      "categoria": "Cervezas",
+      "precio": 12,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "CUSQUENA330",
+      "nombre": "Cusqueña personal 330 ml",
+      "categoria": "Cervezas",
+      "precio": 12,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "CERVEZA620",
+      "nombre": "Cerveza de 620 ml",
+      "categoria": "Cervezas",
+      "precio": 16,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "ARTESANAL",
+      "nombre": "Cerveza artesanal",
+      "categoria": "Cervezas",
+      "precio": 18,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "BALDE5",
+      "nombre": "Balde de 5 cervezas",
+      "categoria": "Cervezas",
+      "precio": 50,
+      "tickets": 5,
+      "tipo": "Paquete",
+      "unidad": "Paquete",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "cervezas",
+            "nombre": "Cervezas personales de 330 ml",
+            "cantidad": 5,
+            "opciones": [
+              {
+                "codigo": "PILSEN330",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "CRISTAL330",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "CUSQUENA330",
+                "cantidad": 1,
+                "recargo": 2
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "PISCO750",
+      "nombre": "Pisco 750 ml",
+      "categoria": "Botellas",
+      "precio": 75,
+      "tickets": 7,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": true,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Pisco",
+        "contenidoMl": 750,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "RONCARTAVIO",
+      "nombre": "Ron Cartavio 750 ml",
+      "categoria": "Botellas",
+      "precio": 100,
+      "tickets": 10,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": true,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Ron",
+        "contenidoMl": 750,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "RONFLOR",
+      "nombre": "Ron Flor de Caña 750 ml",
+      "categoria": "Botellas",
+      "precio": 100,
+      "tickets": 10,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": true,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Ron",
+        "contenidoMl": 750,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "VODKA",
+      "nombre": "Vodka Smirnoff",
+      "categoria": "Botellas",
+      "precio": 110,
+      "tickets": 11,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": true,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Vodka",
+        "contenidoMl": 750,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "REDLABEL",
+      "nombre": "Whisky Red Label",
+      "categoria": "Botellas",
+      "precio": 150,
+      "tickets": 15,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": true,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Whisky",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "BLACKLABEL",
+      "nombre": "Whisky Black Label",
+      "categoria": "Botellas",
+      "precio": 230,
+      "tickets": 23,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": true,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Whisky",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "COLAPERSONAL",
+      "nombre": "Coca-Cola personal",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 5,
+      "tickets": 0,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "INCAPersonal",
+      "nombre": "Inca Kola personal",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 5,
+      "tickets": 0,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "SPRITEPERSONAL",
+      "nombre": "Sprite personal",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 5,
+      "tickets": 0,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "COLA15",
+      "nombre": "Coca-Cola 1.5 L",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 11,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "INCA15",
+      "nombre": "Inca Kola 1.5 L",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 11,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "SPRITE15",
+      "nombre": "Sprite 1.5 L",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 11,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "AGUA",
+      "nombre": "Agua mineral sin gas",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 4,
+      "tickets": 0,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "LIMONADA",
+      "nombre": "Jarra de limonada",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 18,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Jarra",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "MARACUYA",
+      "nombre": "Jarra de maracuyá",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 18,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Jarra",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "VOLT",
+      "nombre": "Volt",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 10,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "REDBULL",
+      "nombre": "Red Bull",
+      "categoria": "Bebidas sin alcohol",
+      "precio": 10,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Unidad",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "SALCHIPAPA",
+      "nombre": "Salchipapa clásica",
+      "categoria": "Piqueos",
+      "precio": 15,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Porción",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "ALITAS",
+      "nombre": "Alitas BBQ o broaster (8 unidades)",
+      "categoria": "Piqueos",
+      "precio": 24,
+      "tickets": 2,
+      "tipo": "Simple",
+      "unidad": "Porción",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "CHICHARRON",
+      "nombre": "Chicharrón de pollo",
+      "categoria": "Piqueos",
+      "precio": 22,
+      "tickets": 2,
+      "tipo": "Simple",
+      "unidad": "Porción",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "TEQUENOS",
+      "nombre": "Tequeños (8 unidades)",
+      "categoria": "Piqueos",
+      "precio": 18,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Porción",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "YUCA",
+      "nombre": "Yuca frita",
+      "categoria": "Piqueos",
+      "precio": 12,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Porción",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "NACHOS",
+      "nombre": "Nachos con queso",
+      "categoria": "Piqueos",
+      "precio": 18,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Porción",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "PAPAS",
+      "nombre": "Papas fritas",
+      "categoria": "Piqueos",
+      "precio": 10,
+      "tickets": 1,
+      "tipo": "Simple",
+      "unidad": "Porción",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "TABLA",
+      "nombre": "Tabla de piqueos para 4",
+      "categoria": "Piqueos",
+      "precio": 65,
+      "tickets": 6,
+      "tipo": "Simple",
+      "unidad": "Porción",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "PISCOML",
+      "nombre": "Pisco abierto (ml)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "ml",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Pisco",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "RONBLANCOML",
+      "nombre": "Ron blanco abierto (ml)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "ml",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Ron",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "RONML",
+      "nombre": "Ron abierto (ml)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "ml",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Ron",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "VODKAML",
+      "nombre": "Vodka abierto (ml)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "ml",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Vodka",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "TEQUILAML",
+      "nombre": "Tequila abierto (ml)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "ml",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Tequila",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "CACHACAML",
+      "nombre": "Cachaça abierta (ml)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "ml",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Cachaça",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "VINOML",
+      "nombre": "Vino tinto abierto (ml)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "ml",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Vino",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "BRANDYML",
+      "nombre": "Brandy abierto (ml)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "ml",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Brandy",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "VINOBOT",
+      "nombre": "Vino tinto (botella para barra)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "Unidad",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Vino",
+        "contenidoMl": 750,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "TEQUILABOT",
+      "nombre": "Tequila (botella para barra)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "Unidad",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Tequila",
+        "contenidoMl": 750,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "CACHACABOT",
+      "nombre": "Cachaça (botella para barra)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "Unidad",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Cachaça",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "BRANDYBOT",
+      "nombre": "Brandy (botella para barra)",
+      "categoria": "Insumos de barra",
+      "precio": 0,
+      "tickets": 0,
+      "tipo": "Insumo",
+      "unidad": "Unidad",
+      "vendible": false,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "Brandy",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "PISCOSOUR",
+      "nombre": "Pisco Sour",
+      "categoria": "Cocteles y tragos",
+      "precio": 20,
+      "tickets": 2,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [
+          {
+            "codigo": "PISCOML",
+            "cantidad": 60,
+            "recargo": 0
+          }
+        ],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "CHILCANO",
+      "nombre": "Chilcano de pisco",
+      "categoria": "Cocteles y tragos",
+      "precio": 18,
+      "tickets": 1,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [
+          {
+            "codigo": "PISCOML",
+            "cantidad": 50,
+            "recargo": 0
+          }
+        ],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "MOJITO",
+      "nombre": "Mojito",
+      "categoria": "Cocteles y tragos",
+      "precio": 20,
+      "tickets": 2,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [
+          {
+            "codigo": "RONBLANCOML",
+            "cantidad": 50,
+            "recargo": 0
+          }
+        ],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "PINACOLADA",
+      "nombre": "Piña colada",
+      "categoria": "Cocteles y tragos",
+      "precio": 20,
+      "tickets": 2,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "ron",
+            "nombre": "Ron de la preparación",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "RONBLANCOML",
+                "cantidad": 50,
+                "recargo": 0
+              },
+              {
+                "codigo": "RONML",
+                "cantidad": 50,
+                "recargo": 0
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "DAIQUIRI",
+      "nombre": "Daiquirí",
+      "categoria": "Cocteles y tragos",
+      "precio": 20,
+      "tickets": 2,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "ron",
+            "nombre": "Ron de la preparación",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "RONBLANCOML",
+                "cantidad": 50,
+                "recargo": 0
+              },
+              {
+                "codigo": "RONML",
+                "cantidad": 50,
+                "recargo": 0
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "COPAVINO",
+      "nombre": "Copa de vino",
+      "categoria": "Cocteles y tragos",
+      "precio": 15,
+      "tickets": 1,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [
+          {
+            "codigo": "VINOML",
+            "cantidad": 150,
+            "recargo": 0
+          }
+        ],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "SHOTRON",
+      "nombre": "Shot de ron",
+      "categoria": "Cocteles y tragos",
+      "precio": 10,
+      "tickets": 1,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "ron",
+            "nombre": "Ron de la preparación",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "RONBLANCOML",
+                "cantidad": 40,
+                "recargo": 0
+              },
+              {
+                "codigo": "RONML",
+                "cantidad": 40,
+                "recargo": 0
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "SHOTVODKA",
+      "nombre": "Shot de vodka",
+      "categoria": "Cocteles y tragos",
+      "precio": 10,
+      "tickets": 1,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [
+          {
+            "codigo": "VODKAML",
+            "cantidad": 40,
+            "recargo": 0
+          }
+        ],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "SHOTTEQUILA",
+      "nombre": "Shot de tequila",
+      "categoria": "Cocteles y tragos",
+      "precio": 10,
+      "tickets": 1,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [
+          {
+            "codigo": "TEQUILAML",
+            "cantidad": 40,
+            "recargo": 0
+          }
+        ],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "CAIPIRINHA",
+      "nombre": "Caipirinha",
+      "categoria": "Cocteles y tragos",
+      "precio": 20,
+      "tickets": 2,
+      "tipo": "Preparado",
+      "unidad": "Preparación",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "base",
+            "nombre": "Base de la preparación",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "CACHACAML",
+                "cantidad": 50,
+                "recargo": 0
+              },
+              {
+                "codigo": "PISCOML",
+                "cantidad": 50,
+                "recargo": 0
+              },
+              {
+                "codigo": "VODKAML",
+                "cantidad": 50,
+                "recargo": 0
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "SANGRIA",
+      "nombre": "Jarra de sangría (1 L)",
+      "categoria": "Cocteles y tragos",
+      "precio": 45,
+      "tickets": 4,
+      "tipo": "Preparado",
+      "unidad": "Jarra",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [
+          {
+            "codigo": "VINOML",
+            "cantidad": 500,
+            "recargo": 0
+          }
+        ],
+        "grupos": [
+          {
+            "clave": "licor",
+            "nombre": "Licor adicional",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "PISCOML",
+                "cantidad": 60,
+                "recargo": 0
+              },
+              {
+                "codigo": "BRANDYML",
+                "cantidad": 60,
+                "recargo": 0
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "HIELO",
+      "nombre": "Hielo (¼ de bolsa)",
+      "categoria": "Adicionales",
+      "precio": 3,
+      "tickets": 0,
+      "tipo": "Hielo",
+      "unidad": "Porción de ¼ de bolsa",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "PROMO10",
+      "nombre": "Promo grupo (10 cervezas)",
+      "categoria": "Combos",
+      "precio": 95,
+      "tickets": 9,
+      "tipo": "Paquete",
+      "unidad": "Paquete",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "cervezas",
+            "nombre": "Cervezas personales de 330 ml",
+            "cantidad": 10,
+            "opciones": [
+              {
+                "codigo": "PILSEN330",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "CRISTAL330",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "CUSQUENA330",
+                "cantidad": 1,
+                "recargo": 2
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "COMBO120",
+      "nombre": "2 baldes + piqueo",
+      "categoria": "Combos",
+      "precio": 120,
+      "tickets": 12,
+      "tipo": "Paquete",
+      "unidad": "Paquete",
+      "vendible": true,
+      "hieloInicial": true,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "cervezas",
+            "nombre": "Cervezas personales de 330 ml",
+            "cantidad": 10,
+            "opciones": [
+              {
+                "codigo": "PILSEN330",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "CRISTAL330",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "CUSQUENA330",
+                "cantidad": 1,
+                "recargo": 2
+              }
+            ]
+          },
+          {
+            "clave": "piqueo",
+            "nombre": "Piqueo incluido",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "SALCHIPAPA",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "TEQUENOS",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "NACHOS",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "YUCA",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "PAPAS",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "ALITAS",
+                "cantidad": 1,
+                "recargo": 4
+              },
+              {
+                "codigo": "CHICHARRON",
+                "cantidad": 1,
+                "recargo": 2
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "COMBO140",
+      "nombre": "Botella de ron + 2 gaseosas + piqueo",
+      "categoria": "Combos",
+      "precio": 140,
+      "tickets": 14,
+      "tipo": "Paquete",
+      "unidad": "Paquete",
+      "vendible": true,
+      "hieloInicial": true,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "ron",
+            "nombre": "Botella de ron 750 ml",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "RONCARTAVIO",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "RONFLOR",
+                "cantidad": 1,
+                "recargo": 0
+              }
+            ]
+          },
+          {
+            "clave": "gaseosas",
+            "nombre": "Gaseosas de 1.5 L",
+            "cantidad": 2,
+            "opciones": [
+              {
+                "codigo": "COLA15",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "INCA15",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "SPRITE15",
+                "cantidad": 1,
+                "recargo": 0
+              }
+            ]
+          },
+          {
+            "clave": "piqueo",
+            "nombre": "Piqueo incluido",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "SALCHIPAPA",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "ALITAS",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "CHICHARRON",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "TEQUENOS",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "NACHOS",
+                "cantidad": 1,
+                "recargo": 0
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": false
+      }
+    },
+    {
+      "codigo": "ADICIONAL15",
+      "nombre": "Adicional botella + gaseosa de 1.5 L + hielo",
+      "categoria": "Adicionales",
+      "precio": 15,
+      "tickets": 1,
+      "tipo": "Paquete",
+      "unidad": "Adicional",
+      "vendible": true,
+      "hieloInicial": false,
+      "regla": {
+        "fijos": [],
+        "grupos": [
+          {
+            "clave": "gaseosa",
+            "nombre": "Gaseosa de 1.5 L",
+            "cantidad": 1,
+            "opciones": [
+              {
+                "codigo": "COLA15",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "INCA15",
+                "cantidad": 1,
+                "recargo": 0
+              },
+              {
+                "codigo": "SPRITE15",
+                "cantidad": 1,
+                "recargo": 0
+              }
+            ]
+          }
+        ],
+        "familia": "",
+        "contenidoMl": null,
+        "requiereHabilitacion": true
+      }
+    }
+  ]
+}

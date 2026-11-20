@@ -53,6 +53,7 @@ else
     builder.Services.AddDbContext<CajaDbContext>(o=>o.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),new MySqlServerVersion(new Version(8,0,0)),x=>x.MigrationsHistoryTable("__CajaMigrationsHistory")));
 }
 builder.Services.AddScoped<CajaService>();
+builder.Services.AddScoped<CartaService>();
 builder.Services.AddScoped<ImageStorage>();
 
 // Configurar Swagger
